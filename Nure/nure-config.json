@@ -1,0 +1,8 @@
+{
+  "HostingService": "bitbucket",
+  "DefaultBranch": "default",
+  "NureBranchPrefix": "nure/",
+  "CommitMessage": "[Version bump]",
+  "PullRequestDescription": null,
+  "AllowPrereleaseDependencies": false
+}
