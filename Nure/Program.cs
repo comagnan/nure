@@ -3,14 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text.Json;
-using LibGit2Sharp;
 using NDesk.Options;
 using Newtonsoft.Json;
 using NLog;
 using Nure.Configuration;
-using Nure.PullRequests;
+using Nure.RepositoryManager;
 using Nure.Update;
 
 namespace Nure
@@ -73,87 +70,21 @@ namespace Nure
             string p_HostingApiKey)
         {
             TextReader json = File.OpenText(Path.Combine(p_DirectoryPath, CONFIGURATION_FILE_NAME));
-            NureOptions options = JsonSerializer.CreateDefault().Deserialize<NureOptions>(new JsonTextReader(json));
-            s_Logger.Info(options.ToString);
-            NuKeeperWrapper nukeeper = new NuKeeperWrapper(options, p_DirectoryPath);
-            string jsonString = File.ReadAllText(Path.Combine(p_DirectoryPath, CONFIGURATION_FILE_NAME));
-            NureOptions nureOptions = JsonSerializer.Deserialize<NureOptions>(jsonString);
+            NureOptions nureOptions = JsonSerializer.CreateDefault().Deserialize<NureOptions>(new JsonTextReader(json));
             s_Logger.Info(nureOptions.ToString);
 
-            if (!Directory.Exists(p_DirectoryPath)) {
-                Console.WriteLine($"Invalid directory provided. Absolute Path: {p_DirectoryPath}");
-                return;
-            }
+            var gitWrapper = new LibGit2SharpWrapper(nureOptions.CommitMessage, nureOptions.DefaultBranch);
 
-            if (!Repository.IsValid(p_DirectoryPath)) {
-                Console.WriteLine($"Invalid Repository provided. Repository: {p_DirectoryPath}");
-                return;
-            }
-
-            Repository targetRepository = new Repository(p_DirectoryPath);
-
-            //Fetch latest Changes
-            //todo parametrize remote name
-            try {
-                string logMessage = "Fetching the latest changes.";
-                var remote = targetRepository.Network.Remotes["origin"];
-                var refSpecs = remote.FetchRefSpecs.Select(x => x.Specification);
-                Commands.Fetch(targetRepository, remote.Name, refSpecs, null, logMessage);
-            } catch (LibGit2SharpException exception) {
-                s_Logger.Error($"Could not fetch the latest changes. {exception.Message}");
-            }
-
-            //get default branch
-            Branch defaultBranch = targetRepository.Branches[nureOptions.DefaultBranch];
-
-            if (defaultBranch == null) {
-                Console.WriteLine("Could not locate the default branch.");
-                return;
-            }
-
-            //Checkout default branch
-            try {
-                Commands.Checkout(targetRepository, defaultBranch);
-            } catch (LibGit2SharpException exception) {
-                s_Logger.Error($"$Could not Checkout the default branch. {exception.Message}");
-            }
-
-            //Create branch name
-            string ticketName = "INNO-001";
-            string guid = "alpha1234";
-            string branchName = $"Nure_{ticketName}_{guid}";
-            s_Logger.Info($"Branch: {branchName}");
-
-            //Create branch from default
-            Branch newBranch = targetRepository.CreateBranch(branchName);
-            //Checkout default branch
-            try {
-                Commands.Checkout(targetRepository, newBranch);
-            } catch (LibGit2SharpException exception) {
-                s_Logger.Error($"$Could not Checkout the default branch. {exception.Message}");
-            }
+            gitWrapper.CreateRepository(p_DirectoryPath);
+            gitWrapper.Fetch();
+            gitWrapper.SetupBranch();
 
             NuKeeperWrapper nukeeper = new NuKeeperWrapper(nureOptions, p_DirectoryPath);
             nukeeper.Run();
-
-            IPullRequestWriterFactory factory = new PullRequestWriterFactory(options, p_HostingApiKey);
-            factory.Create().Write();
             s_Logger.Info("Run Complete");
 
-            targetRepository.Diff.Compare<TreeChanges>().ToList().ForEach(change => s_Logger.Info($"Change: {change.Status}. File name: {change.Path}"));
-
-            s_Logger.Info("Staging the changes.");
-            Commands.Stage(targetRepository, "*");
-
-            Identity identity = new Identity("Jenkins", "SomeEmail@email.com");
-            Signature signature = new Signature(identity, DateTimeOffset.Now);
-
-            string commitMessage = $"{nureOptions.CommitMessage} - Some commit message";
-            s_Logger.Info($"Commit message. {commitMessage}");
-
-            // // commit the changes
-            // s_Logger.Info("Commiting");
-            // targetRepository.Commit(commitMessage,signature, signature, null);
+            gitWrapper.Stage();
+            gitWrapper.Commit();
         }
     }
 }
