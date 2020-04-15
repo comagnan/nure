@@ -26,7 +26,8 @@ namespace Nure
             var optionSet = new OptionSet {
                 { "d|directory-path=", "Absolute path to the repository to update.", value => parameters.Add(value) },
                 { "g|git-api-key=", "API key to push git commits.", value => parameters.Add(value) },
-                { "k|hosting-api-key=", "API key to create pull requests.", value => parameters.Add(value) },
+                { "u|hosting-username=", "Username used with the hosting platform.", value => parameters.Add(value) },
+                { "p|hosting-password=", "Password used with the hosting platform.", value => parameters.Add(value) },
                 { "h|help", "Show this message", value => show_help = value != null }
             };
 
@@ -43,13 +44,13 @@ namespace Nure
                 return;
             }
 
-            if (parameters.Count != 3) {
+            if (parameters.Count != 4) {
                 s_Logger.Error("Invalid number of arguments.");
                 s_Logger.Info("Try `--help` for more information.");
                 return;
             }
 
-            Run(parameters[0], parameters[1], parameters[2]);
+            Run(parameters[0], parameters[1], parameters[2], parameters[3]);
         }
 
         private static void ShowHelp(OptionSet p_OptionSet)
@@ -65,10 +66,12 @@ namespace Nure
         /// </summary>
         /// <param name="p_DirectoryPath">Absolute path to the repository to update.</param>
         /// <param name="p_GitApiKey">API key to use to push commits.</param>
-        /// <param name="p_HostingApiKey">API key to create pull requests.</param>
+        /// <param name="p_HostingUsername">Username used with the hosting platform.</param>
+        /// <param name="p_HostingPassword">Password used with the hosting platform.</param>
         private static void Run(string p_DirectoryPath,
             string p_GitApiKey,
-            string p_HostingApiKey)
+            string p_HostingUsername,
+            string p_HostingPassword)
         {
             TextReader json = File.OpenText(Path.Combine(p_DirectoryPath, CONFIGURATION_FILE_NAME));
             NureOptions nureOptions = JsonSerializer.CreateDefault().Deserialize<NureOptions>(new JsonTextReader(json));
