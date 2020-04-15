@@ -4,7 +4,7 @@ using LibGit2Sharp;
 
 namespace Nure.RepositoryManager
 {
-    public interface ILibgit2SharpWrapper
+    public interface IGitAgent
     {
         void CreateRepository(string p_DirectoryPath);
         void Fetch(string p_RemoteName);

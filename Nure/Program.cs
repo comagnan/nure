@@ -74,7 +74,7 @@ namespace Nure
             NureOptions nureOptions = JsonSerializer.CreateDefault().Deserialize<NureOptions>(new JsonTextReader(json));
             s_Logger.Info(nureOptions.ToString);
 
-            var gitWrapper = new LibGit2SharpWrapper(nureOptions.CommitMessage, nureOptions.DefaultBranch);
+            var gitWrapper = new GitAgent(nureOptions.CommitMessage, nureOptions.DefaultBranch);
 
             try {
                 gitWrapper.CreateRepository(p_DirectoryPath);
@@ -82,6 +82,7 @@ namespace Nure
                 gitWrapper.SetupBranch();
             } catch (LibGit2SharpException exception) {
                 s_Logger.Error($"Could not setup the branch. {exception.Message}");
+                return;
             } catch (InvalidProgramException exception) {
                 s_Logger.Error($"Could not create the repository. {exception.Message}");
             }

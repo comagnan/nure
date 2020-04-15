@@ -5,10 +5,11 @@ using System.IO;
 using System.Linq;
 using LibGit2Sharp;
 using NLog;
+using Nure.RepositoryManager.Exceptions;
 
 namespace Nure.RepositoryManager
 {
-    public class LibGit2SharpWrapper : ILibgit2SharpWrapper
+    public class GitAgent : IGitAgent
     {
         private static readonly ILogger s_Logger = LogManager.GetCurrentClassLogger();
 
@@ -16,7 +17,7 @@ namespace Nure.RepositoryManager
         private readonly string m_CommitMessagePrefix;
         private readonly string m_DefaultBranch;
 
-        public LibGit2SharpWrapper(string p_CommitMessagePrefix,
+        public GitAgent(string p_CommitMessagePrefix,
             string p_DefaultBranch)
         {
             m_CommitMessagePrefix = p_CommitMessagePrefix;
@@ -26,13 +27,13 @@ namespace Nure.RepositoryManager
         public void CreateRepository(string p_DirectoryPath)
         {
             if (!Directory.Exists(p_DirectoryPath)) {
-                s_Logger.Error($"Invalid directory provided. Absolute Path: {p_DirectoryPath}");
-                throw new InvalidProgramException(); //placehodler
+                s_Logger.Error($"Invalid directory provided. Directory does not exist. Absolute Path: {p_DirectoryPath}");
+                throw new InvalidDirectoryException("Invalid directory provided.");
             }
 
             if (!Repository.IsValid(p_DirectoryPath)) {
-                s_Logger.Error($"Invalid Repository provided. Repository: {p_DirectoryPath}");
-                throw new InvalidProgramException(); //placehodler
+                s_Logger.Error($"This is not a valid git repository. Path Provided Repository: {p_DirectoryPath}");
+                throw new InvalidRepositoryException("This is not a valid git repository.");
             }
 
             m_Repository = new Repository(p_DirectoryPath);
