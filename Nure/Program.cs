@@ -5,12 +5,15 @@ using System.Linq;
 using System.Text.Json;
 using LibGit2Sharp;
 using NDesk.Options;
+using NLog;
 using Nure.Configuration;
+using Nure.Update;
 
 namespace Nure
 {
     class Program
     {
+        private static ILogger s_Logger = LogManager.GetCurrentClassLogger();
         private const string CONFIGURATION_FILE_NAME = "nure-config.json";
 
         static void Main(string[] p_Args)
@@ -18,7 +21,7 @@ namespace Nure
             bool show_help = false;
             List<string> parameters = new List<string>();
 
-            var optionSet = new OptionSet() {
+            var optionSet = new OptionSet {
                 { "d|directory-path=", "Absolute path to the repository to update.", value => parameters.Add(value) },
                 { "g|git-api-key=", "API key to push git commits.", value => parameters.Add(value) },
                 { "k|hosting-api-key=", "API key to create pull requests.", value => parameters.Add(value) },
@@ -28,8 +31,8 @@ namespace Nure
             try {
                 optionSet.Parse(p_Args);
             } catch (OptionException e) {
-                Console.Write(e.Message);
-                Console.Write("Try `--help` for more information.");
+                s_Logger.Error(e.Message);
+                s_Logger.Info("Try `--help` for more information.");
                 return;
             }
 
@@ -39,8 +42,9 @@ namespace Nure
             }
 
             if (parameters.Count != 3) {
-                Console.Write("Invalid number of arguments.");
-                Console.Write("Try `--help` for more information.");
+                s_Logger.Error("Invalid number of arguments.");
+                s_Logger.Info("Try `--help` for more information.");
+                return;
             }
 
             Run(parameters[0], parameters[1], parameters[2]);
@@ -48,8 +52,8 @@ namespace Nure
 
         private static void ShowHelp(OptionSet p_OptionSet)
         {
-            Console.WriteLine("Nure:");
-            Console.WriteLine("Updates the dependencies of a repository using NuGet, then sends a pull request.");
+            s_Logger.Info("Nure:");
+            s_Logger.Info("Updates the dependencies of a repository using NuGet, then sends a pull request.");
 
             p_OptionSet.WriteOptionDescriptions(Console.Out);
         }
@@ -59,11 +63,16 @@ namespace Nure
         /// </summary>
         /// <param name="p_DirectoryPath">Absolute path to the repository to update.</param>
         /// <param name="p_GitApiKey">API key to use to push commits.</param>
-        /// <param name="p_HostingApiKey">API key to create pull re4quests.</param>
-        static void Run(string p_DirectoryPath,
+        /// <param name="p_HostingApiKey">API key to create pull requests.</param>
+        private static void Run(string p_DirectoryPath,
             string p_GitApiKey,
             string p_HostingApiKey)
         {
+            string jsonString = File.ReadAllText(Path.Combine(p_DirectoryPath, CONFIGURATION_FILE_NAME));
+            NureOptions options = JsonSerializer.Deserialize<NureOptions>(jsonString);
+            s_Logger.Info(options.ToString);
+            NuKeeperWrapper nukeeper = new NuKeeperWrapper(options, p_DirectoryPath);
+            nukeeper.Run();
             string jsonString = File.ReadAllText(Path.Combine(p_DirectoryPath, CONFIGURATION_FILE_NAME));
             NureOptions nureOptions = JsonSerializer.Deserialize<NureOptions>(jsonString);
             Console.WriteLine(nureOptions.ToString());
