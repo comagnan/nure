@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using LibGit2Sharp;
 using NDesk.Options;
 using Newtonsoft.Json;
 using NLog;
@@ -75,16 +76,25 @@ namespace Nure
 
             var gitWrapper = new LibGit2SharpWrapper(nureOptions.CommitMessage, nureOptions.DefaultBranch);
 
-            gitWrapper.CreateRepository(p_DirectoryPath);
-            gitWrapper.Fetch();
-            gitWrapper.SetupBranch();
+            try {
+                gitWrapper.CreateRepository(p_DirectoryPath);
+                gitWrapper.Fetch("origin");
+                gitWrapper.SetupBranch();
+            } catch (LibGit2SharpException exception) {
+                s_Logger.Error($"Could not setup the branch. {exception.Message}");
+            } catch (InvalidProgramException exception) {
+                s_Logger.Error($"Could not create the repository. {exception.Message}");
+            }
 
             NuKeeperWrapper nukeeper = new NuKeeperWrapper(nureOptions, p_DirectoryPath);
             nukeeper.Run();
             s_Logger.Info("Run Complete");
 
             gitWrapper.Stage();
-            gitWrapper.Commit();
+            Identity identity = new Identity("Jenkins", "SomeEmail@email.com");
+            Signature signature = new Signature(identity, DateTimeOffset.Now);
+
+            gitWrapper.Commit(signature);
         }
     }
 }

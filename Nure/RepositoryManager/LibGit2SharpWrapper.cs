@@ -10,12 +10,11 @@ namespace Nure.RepositoryManager
 {
     public class LibGit2SharpWrapper : ILibgit2SharpWrapper
     {
-        private static ILogger s_Logger = LogManager.GetCurrentClassLogger();
+        private static readonly ILogger s_Logger = LogManager.GetCurrentClassLogger();
 
         private Repository m_Repository;
-        private string m_CommitMessagePrefix;
-        private string m_DefaultBranch;
-
+        private readonly string m_CommitMessagePrefix;
+        private readonly string m_DefaultBranch;
 
         public LibGit2SharpWrapper(string p_CommitMessagePrefix,
             string p_DefaultBranch)
@@ -39,23 +38,15 @@ namespace Nure.RepositoryManager
             m_Repository = new Repository(p_DirectoryPath);
         }
 
-        public void Fetch()
+        public void Fetch(string p_RemoteName)
         {
-            //Fetch latest Changes
-            //todo parametrize remote name
-            try {
-                string logMessage = "Fetching the latest changes.";
-                var remote = m_Repository.Network.Remotes["origin"];
-                var refSpecs = remote.FetchRefSpecs.Select(x => x.Specification);
-                Commands.Fetch(m_Repository, remote.Name, refSpecs, null, logMessage);
-            } catch (LibGit2SharpException exception) {
-                s_Logger.Error($"Could not fetch the latest changes. {exception.Message}");
-            }
+            var remote = m_Repository.Network.Remotes[p_RemoteName];
+            var refSpecs = remote.FetchRefSpecs.Select(x => x.Specification);
+            Commands.Fetch(m_Repository, remote.Name, refSpecs, null, "Fetching the latest changes.");
         }
 
         public void SetupBranch()
         {
-            //get default branch
             Branch defaultBranch = m_Repository.Branches[m_DefaultBranch];
 
             if (defaultBranch == null) {
@@ -64,26 +55,15 @@ namespace Nure.RepositoryManager
             }
 
             //Checkout default branch
-            try {
-                Commands.Checkout(m_Repository, defaultBranch);
-            } catch (LibGit2SharpException exception) {
-                s_Logger.Error($"$Could not Checkout the default branch. {exception.Message}");
-            }
+            Commands.Checkout(m_Repository, defaultBranch);
 
-            //Create branch name
+            //todo Create logic for branch name
             string ticketName = "INNO-001";
             string guid = "alpha1234";
             string branchName = $"Nure_{ticketName}_{guid}";
             s_Logger.Info($"Branch: {branchName}");
 
-            //Create branch from default
-            Branch newBranch = m_Repository.CreateBranch(branchName);
-            //Checkout default branch
-            try {
-                Commands.Checkout(m_Repository, newBranch);
-            } catch (LibGit2SharpException exception) {
-                s_Logger.Error($"$Could not Checkout the default branch. {exception.Message}");
-            }
+            Commands.Checkout(m_Repository, m_Repository.CreateBranch(branchName));
         }
 
         public void Stage()
@@ -94,17 +74,13 @@ namespace Nure.RepositoryManager
             Commands.Stage(m_Repository, "*");
         }
 
-        public void Commit()
+        public void Commit(Signature p_Signature)
         {
-            Identity identity = new Identity("Jenkins", "SomeEmail@email.com");
-            Signature signature = new Signature(identity, DateTimeOffset.Now);
-
             string commitMessage = $"{m_CommitMessagePrefix} - Some commit message";
             s_Logger.Info($"Commit message. {commitMessage}");
 
-            // commit the changes
-            s_Logger.Info("Commiting");
-            m_Repository.Commit(commitMessage, signature, signature, null);
+            s_Logger.Info("Commiting the changes.");
+            m_Repository.Commit(commitMessage, p_Signature, p_Signature, null);
         }
     }
 }
