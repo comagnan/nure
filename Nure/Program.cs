@@ -32,11 +32,24 @@ namespace Nure
             }
 
             if (show_help) {
-                optionSet.WriteOptionDescriptions(Console.Out);
+                ShowHelp(optionSet);
                 return;
             }
 
+            if (parameters.Count != 3) {
+                Console.Write("Invalid number of arguments.");
+                Console.Write("Try `--help` for more information.");
+            }
+
             Run(parameters[0], parameters[1], parameters[2]);
+        }
+
+        private static void ShowHelp(OptionSet p_OptionSet)
+        {
+            Console.WriteLine("Nure:");
+            Console.WriteLine("Updates the dependencies of a repository using NuGet, then sends a pull request.");
+
+            p_OptionSet.WriteOptionDescriptions(Console.Out);
         }
 
         /// <summary>
