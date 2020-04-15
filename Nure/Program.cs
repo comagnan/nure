@@ -120,18 +120,6 @@ namespace Nure
             //Todo Call the package updater
             NuKeeperWrapper nukeeper = new NuKeeperWrapper(nureOptions, p_DirectoryPath);
             nukeeper.Run();
-
-            //todo Add all the changes
-            Commands.Stage(targetRepository, "*");
-
-            Identity identity = new Identity("Jenkins", "SomeEmail@email.com");
-            Signature signature = new Signature(identity, DateTimeOffset.Now);
-
-            // create commit message
-            string commitMessage = $"{nureOptions.CommitMessage} - Some commit message";
-
-            // commit the changes
-            targetRepository.Commit(commitMessage,signature, signature, null);
         }
     }
 }
