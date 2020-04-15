@@ -6,10 +6,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <None Remove="nure-config.json" />
-      <EmbeddedResource Include="nure-config.json">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </EmbeddedResource>
+      <PackageReference Include="NDesk.Options.Core" Version="1.2.5" />
+      <PackageReference Include="NuGet.CommandLine" Version="5.4.0" />
+      <PackageReference Include="NuGet.Credentials" Version="5.5.1" />
+      <PackageReference Include="NuGet.Protocol" Version="5.5.1" />
     </ItemGroup>
 
     <ItemGroup>
