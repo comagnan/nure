@@ -4,5 +4,7 @@
   "NureBranchPrefix": "nure/",
   "CommitMessage": "[Version bump]",
   "PullRequestDescription": null,
-  "AllowPrereleaseDependencies": false
+  "AllowPrereleaseDependencies": false,
+  "CustomNugetSources": [],
+  "PackagesToIgnore": []
 }
