@@ -72,14 +72,12 @@ namespace Nure
             NureOptions nureOptions = JsonSerializer.Deserialize<NureOptions>(jsonString);
             s_Logger.Info(nureOptions.ToString);
 
-            if(!Directory.Exists(p_DirectoryPath))
-            {
+            if (!Directory.Exists(p_DirectoryPath)) {
                 Console.WriteLine($"Invalid directory provided. Absolute Path: {p_DirectoryPath}");
                 return;
             }
 
-            if(!Repository.IsValid(p_DirectoryPath))
-            {
+            if (!Repository.IsValid(p_DirectoryPath)) {
                 Console.WriteLine($"Invalid Repository provided. Repository: {p_DirectoryPath}");
                 return;
             }
@@ -88,7 +86,6 @@ namespace Nure
 
             //Fetch latest Changes
             //todo parametrize remote name
-
             try {
                 string logMessage = "Fetching the latest changes.";
                 var remote = targetRepository.Network.Remotes["origin"];
@@ -101,25 +98,51 @@ namespace Nure
             //get default branch
             Branch defaultBranch = targetRepository.Branches[nureOptions.DefaultBranch];
 
-            if (defaultBranch == null)
-            {
-               Console.WriteLine("Could not locate the default branch.");
-               return;
+            if (defaultBranch == null) {
+                Console.WriteLine("Could not locate the default branch.");
+                return;
             }
 
             //Checkout default branch
-            Commands.Checkout(targetRepository , defaultBranch);
+            try {
+                Commands.Checkout(targetRepository, defaultBranch);
+            } catch (LibGit2SharpException exception) {
+                s_Logger.Error($"$Could not Checkout the default branch. {exception.Message}");
+            }
 
             //Create branch name
-            string ticketName = "_";
-            string guid = "A number";
+            string ticketName = "INNO-001";
+            string guid = "alpha1234";
             string branchName = $"Nure_{ticketName}_{guid}";
-            //todo Create branch from default
-            Branch newBranch = targetRepository.CreateBranch(branchName);
+            s_Logger.Info($"Branch: {branchName}");
 
-            //Todo Call the package updater
+            //Create branch from default
+            Branch newBranch = targetRepository.CreateBranch(branchName);
+            //Checkout default branch
+            try {
+                Commands.Checkout(targetRepository, newBranch);
+            } catch (LibGit2SharpException exception) {
+                s_Logger.Error($"$Could not Checkout the default branch. {exception.Message}");
+            }
+
             NuKeeperWrapper nukeeper = new NuKeeperWrapper(nureOptions, p_DirectoryPath);
             nukeeper.Run();
+            s_Logger.Info("Run Complete");
+
+            targetRepository.Diff.Compare<TreeChanges>().ToList().ForEach(change => s_Logger.Info($"Change: {change.Status}. File name: {change.Path}"));
+
+            s_Logger.Info("Staging the changes.");
+            Commands.Stage(targetRepository, "*");
+
+            Identity identity = new Identity("Jenkins", "SomeEmail@email.com");
+            Signature signature = new Signature(identity, DateTimeOffset.Now);
+
+            string commitMessage = $"{nureOptions.CommitMessage} - Some commit message";
+            s_Logger.Info($"Commit message. {commitMessage}");
+
+            // // commit the changes
+            // s_Logger.Info("Commiting");
+            // targetRepository.Commit(commitMessage,signature, signature, null);
         }
     }
 }
