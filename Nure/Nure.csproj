@@ -12,6 +12,7 @@
 
     <ItemGroup>
         <PackageReference Include="Bitbucket.Cloud.Net" Version="1.0.1" />
+        <PackageReference Include="GitHub" Version="1.21.0" />
         <PackageReference Include="NDesk.Options.Core" Version="1.2.5" />
         <PackageReference Include="NLog" Version="4.7.0" />
         <PackageReference Include="NuGet.CommandLine" Version="5.4.0" />
