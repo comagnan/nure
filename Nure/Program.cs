@@ -69,13 +69,8 @@ namespace Nure
             string p_HostingApiKey)
         {
             string jsonString = File.ReadAllText(Path.Combine(p_DirectoryPath, CONFIGURATION_FILE_NAME));
-            NureOptions options = JsonSerializer.Deserialize<NureOptions>(jsonString);
-            s_Logger.Info(options.ToString);
-            NuKeeperWrapper nukeeper = new NuKeeperWrapper(options, p_DirectoryPath);
-            nukeeper.Run();
-            string jsonString = File.ReadAllText(Path.Combine(p_DirectoryPath, CONFIGURATION_FILE_NAME));
             NureOptions nureOptions = JsonSerializer.Deserialize<NureOptions>(jsonString);
-            Console.WriteLine(nureOptions.ToString());
+            s_Logger.Info(nureOptions.ToString);
 
             if(!Directory.Exists(p_DirectoryPath))
             {
@@ -83,7 +78,7 @@ namespace Nure
                 return;
             }
 
-            if(Repository.IsValid(p_DirectoryPath))
+            if(!Repository.IsValid(p_DirectoryPath))
             {
                 Console.WriteLine($"Invalid Repository provided. Repository: {p_DirectoryPath}");
                 return;
@@ -93,10 +88,15 @@ namespace Nure
 
             //Fetch latest Changes
             //todo parametrize remote name
-            string logMessage = "Fetching the latest changes.";
-            var remote = targetRepository.Network.Remotes["origin"];
-            var refSpecs = remote.FetchRefSpecs.Select(x => x.Specification);
-            Commands.Fetch(targetRepository, remote.Name, refSpecs, null, logMessage);
+
+            try {
+                string logMessage = "Fetching the latest changes.";
+                var remote = targetRepository.Network.Remotes["origin"];
+                var refSpecs = remote.FetchRefSpecs.Select(x => x.Specification);
+                Commands.Fetch(targetRepository, remote.Name, refSpecs, null, logMessage);
+            } catch (LibGit2SharpException exception) {
+                s_Logger.Error($"Could not fetch the latest changes. {exception.Message}");
+            }
 
             //get default branch
             Branch defaultBranch = targetRepository.Branches[nureOptions.DefaultBranch];
@@ -118,6 +118,8 @@ namespace Nure
             Branch newBranch = targetRepository.CreateBranch(branchName);
 
             //Todo Call the package updater
+            NuKeeperWrapper nukeeper = new NuKeeperWrapper(nureOptions, p_DirectoryPath);
+            nukeeper.Run();
 
             //todo Add all the changes
             Commands.Stage(targetRepository, "*");
