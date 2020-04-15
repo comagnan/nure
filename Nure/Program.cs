@@ -3,10 +3,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using LibGit2Sharp;
 using NDesk.Options;
 using Newtonsoft.Json;
 using NLog;
 using Nure.Configuration;
+using Nure.RepositoryManager;
 using Nure.Update;
 
 namespace Nure
@@ -72,10 +74,31 @@ namespace Nure
             string p_HostingPassword)
         {
             TextReader json = File.OpenText(Path.Combine(p_DirectoryPath, CONFIGURATION_FILE_NAME));
-            NureOptions options = JsonSerializer.CreateDefault().Deserialize<NureOptions>(new JsonTextReader(json));
-            s_Logger.Info(options.ToString);
-            NuKeeperWrapper nukeeper = new NuKeeperWrapper(options, p_DirectoryPath);
+            NureOptions nureOptions = JsonSerializer.CreateDefault().Deserialize<NureOptions>(new JsonTextReader(json));
+            s_Logger.Info(nureOptions.ToString);
+
+            var gitWrapper = new GitAgent(nureOptions.CommitMessage, nureOptions.DefaultBranch);
+
+            try {
+                gitWrapper.CreateRepository(p_DirectoryPath);
+                gitWrapper.Fetch("origin");
+                gitWrapper.SetupBranch();
+            } catch (LibGit2SharpException exception) {
+                s_Logger.Error($"Could not setup the branch. {exception.Message}");
+                return;
+            } catch (InvalidProgramException exception) {
+                s_Logger.Error($"Could not create the repository. {exception.Message}");
+            }
+
+            NuKeeperWrapper nukeeper = new NuKeeperWrapper(nureOptions, p_DirectoryPath);
             nukeeper.Run();
+            s_Logger.Info("Run Complete");
+
+            gitWrapper.Stage();
+            Identity identity = new Identity("Jenkins", "SomeEmail@email.com");
+            Signature signature = new Signature(identity, DateTimeOffset.Now);
+
+            gitWrapper.Commit(signature);
         }
     }
 }

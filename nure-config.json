@@ -1,6 +1,6 @@
 {
   "HostingService": "bitbucket",
-  "DefaultBranch": "default",
+  "DefaultBranch": "master",
   "NureBranchPrefix": "nure/",
   "CommitMessage": "[Version bump]",
   "PullRequestDescription": null,
