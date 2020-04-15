@@ -5,12 +5,14 @@ namespace Nure.Configuration
     public class NureOptions
     {
         private bool DEFAULT_ALLOW_PRELEASE_DEPENDENCIES = false;
-        
+        private const string DEFAULT_COMMIT_MESSAGE_PREFIX = "Update {} to {}";
+
         public NureOptions()
         {
             AllowPrereleaseDependencies = DEFAULT_ALLOW_PRELEASE_DEPENDENCIES;
             CustomNugetSources = new List<string>();
             PackagesToIgnore = new List<string>();
+            CommitMessage = DEFAULT_COMMIT_MESSAGE_PREFIX;
         }
 
         public string HostingService { get; set; }

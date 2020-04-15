@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
+using LibGit2Sharp;
 using NDesk.Options;
 using Nure.Configuration;
 
@@ -55,16 +57,70 @@ namespace Nure
         /// <summary>
         /// Updates nuget dependencies and creates a pull request.
         /// </summary>
-        /// <param name="directoryPath">Absolute path to the repository to update.</param>
-        /// <param name="gitApiKey">API key to use to push commits.</param>
-        /// <param name="hostingApiKey">API key to create pull requests.</param>
-        static void Run(string directoryPath,
-            string gitApiKey,
-            string hostingApiKey)
+        /// <param name="p_DirectoryPath">Absolute path to the repository to update.</param>
+        /// <param name="p_GitApiKey">API key to use to push commits.</param>
+        /// <param name="p_HostingApiKey">API key to create pull re4quests.</param>
+        static void Run(string p_DirectoryPath,
+            string p_GitApiKey,
+            string p_HostingApiKey)
         {
-            string jsonString = File.ReadAllText(Path.Combine(directoryPath, CONFIGURATION_FILE_NAME));
-            NureOptions options = JsonSerializer.Deserialize<NureOptions>(jsonString);
-            Console.WriteLine(options.ToString());
+            string jsonString = File.ReadAllText(Path.Combine(p_DirectoryPath, CONFIGURATION_FILE_NAME));
+            NureOptions nureOptions = JsonSerializer.Deserialize<NureOptions>(jsonString);
+            Console.WriteLine(nureOptions.ToString());
+
+            if(!Directory.Exists(p_DirectoryPath))
+            {
+                Console.WriteLine($"Invalid directory provided. Absolute Path: {p_DirectoryPath}");
+                return;
+            }
+
+            if(Repository.IsValid(p_DirectoryPath))
+            {
+                Console.WriteLine($"Invalid Repository provided. Repository: {p_DirectoryPath}");
+                return;
+            }
+
+            Repository targetRepository = new Repository(p_DirectoryPath);
+
+            //Fetch latest Changes
+            //todo parametrize remote name
+            string logMessage = "Fetching the latest changes.";
+            var remote = targetRepository.Network.Remotes["origin"];
+            var refSpecs = remote.FetchRefSpecs.Select(x => x.Specification);
+            Commands.Fetch(targetRepository, remote.Name, refSpecs, null, logMessage);
+
+            //get default branch
+            Branch defaultBranch = targetRepository.Branches[nureOptions.DefaultBranch];
+
+            if (defaultBranch == null)
+            {
+               Console.WriteLine("Could not locate the default branch.");
+               return;
+            }
+
+            //Checkout default branch
+            Commands.Checkout(targetRepository , defaultBranch);
+
+            //Create branch name
+            string ticketName = "_";
+            string guid = "A number";
+            string branchName = $"Nure_{ticketName}_{guid}";
+            //todo Create branch from default
+            Branch newBranch = targetRepository.CreateBranch(branchName);
+
+            //Todo Call the package updater
+
+            //todo Add all the changes
+            Commands.Stage(targetRepository, "*");
+
+            Identity identity = new Identity("Jenkins", "SomeEmail@email.com");
+            Signature signature = new Signature(identity, DateTimeOffset.Now);
+
+            // create commit message
+            string commitMessage = $"{nureOptions.CommitMessage} - Some commit message";
+
+            // commit the changes
+            targetRepository.Commit(commitMessage,signature, signature, null);
         }
     }
 }
