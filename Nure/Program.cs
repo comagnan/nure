@@ -74,9 +74,6 @@ namespace Nure
             s_Logger.Info(options.ToString);
             NuKeeperWrapper nukeeper = new NuKeeperWrapper(options, p_DirectoryPath);
             nukeeper.Run();
-
-            IPullRequestWriterFactory factory = new PullRequestWriterFactory(options, p_HostingApiKey);
-            factory.Create().Write();
         }
     }
 }
