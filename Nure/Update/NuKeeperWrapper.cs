@@ -32,7 +32,7 @@ namespace Nure.Update
         {
             string usePrerelease = m_NureOptions.AllowPrereleaseDependencies ? "Always" : "Never";
 
-            return $"nukeeper update {m_RepositoryDirectory} --useprerelease {usePrerelease} -a 0";
+            return $"nukeeper update {m_RepositoryDirectory} --useprerelease {usePrerelease} -a 0 -m 100";
         }
 
         private void ExecuteInShell(string p_Command)

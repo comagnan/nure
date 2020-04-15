@@ -1,10 +1,13 @@
-﻿using System;
+﻿// Copyright (c) 2005-2020, Coveo Solutions Inc.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text.Json;
 using NDesk.Options;
+using Newtonsoft.Json;
 using NLog;
 using Nure.Configuration;
+using Nure.PullRequests;
 using Nure.Update;
 
 namespace Nure
@@ -66,11 +69,14 @@ namespace Nure
             string p_GitApiKey,
             string p_HostingApiKey)
         {
-            string jsonString = File.ReadAllText(Path.Combine(p_DirectoryPath, CONFIGURATION_FILE_NAME));
-            NureOptions options = JsonSerializer.Deserialize<NureOptions>(jsonString);
+            TextReader json = File.OpenText(Path.Combine(p_DirectoryPath, CONFIGURATION_FILE_NAME));
+            NureOptions options = JsonSerializer.CreateDefault().Deserialize<NureOptions>(new JsonTextReader(json));
             s_Logger.Info(options.ToString);
             NuKeeperWrapper nukeeper = new NuKeeperWrapper(options, p_DirectoryPath);
             nukeeper.Run();
+
+            IPullRequestWriterFactory factory = new PullRequestWriterFactory(options, p_HostingApiKey);
+            factory.Create().Write();
         }
     }
 }
