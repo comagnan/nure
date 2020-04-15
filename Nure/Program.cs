@@ -7,7 +7,6 @@ using NDesk.Options;
 using Newtonsoft.Json;
 using NLog;
 using Nure.Configuration;
-using Nure.PullRequests;
 using Nure.Update;
 
 namespace Nure
