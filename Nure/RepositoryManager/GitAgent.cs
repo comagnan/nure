@@ -49,11 +49,6 @@ namespace Nure.RepositoryManager
                     new UsernamePasswordCredentials { Username = p_Parameters.Username, Password = p_Parameters.Password }
             };
 
-            s_Logger.Debug($"Fetching remote: {p_RemoteName}");
-            string remoteUrl = new Uri(p_HostingUrl).AbsoluteUri;
-            void ActionUpdater(RemoteUpdater p_I) => p_I.Url = remoteUrl;
-            m_Repository.Network.Remotes.Update(p_RemoteName, (Action<RemoteUpdater>) ActionUpdater);
-
             var remote = m_Repository.Network.Remotes[p_RemoteName];
             s_Logger.Debug($"Remote Url remote: {remote.Url}");
             var refSpecs = remote.FetchRefSpecs.Select(x => x.Specification);
