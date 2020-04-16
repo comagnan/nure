@@ -1,7 +1,6 @@
 ﻿// Copyright (c) 2005-2020, Coveo Solutions Inc.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using LibGit2Sharp;
 using NDesk.Options;
@@ -20,15 +19,14 @@ namespace Nure
 
         static void Main(string[] p_Args)
         {
-            bool show_help = false;
-            List<string> parameters = new List<string>();
+            RunTimeParameters runTimeParameters = new RunTimeParameters();
 
             var optionSet = new OptionSet {
-                { "d|directory-path=", "Absolute path to the repository to update.", value => parameters.Add(value) },
-                { "g|git-api-key=", "API key to push git commits.", value => parameters.Add(value) },
-                { "u|hosting-username=", "Username used with the hosting platform.", value => parameters.Add(value) },
-                { "p|hosting-password=", "Password used with the hosting platform.", value => parameters.Add(value) },
-                { "h|help", "Show this message", value => show_help = value != null }
+                { "d|directory-path=", "Absolute path to the repository to update.", value => runTimeParameters.DirectoryPath = value },
+                { "g|git-api-key=", "API key to push git commits.", value => runTimeParameters.GitApiKey = value },
+                { "u|hosting-username=", "Username used with the hosting platform.", value => runTimeParameters.Username = value },
+                { "p|hosting-password=", "Password used with the hosting platform.", value => runTimeParameters.Password = value },
+                { "h|help", "Show this message", value => runTimeParameters.Help = value != null }
             };
 
             try {
@@ -39,18 +37,18 @@ namespace Nure
                 return;
             }
 
-            if (show_help) {
+            if (runTimeParameters.Help) {
                 ShowHelp(optionSet);
                 return;
             }
 
-            if (parameters.Count != 4) {
-                s_Logger.Error("Invalid number of arguments.");
+            if (!runTimeParameters.Validate(false)) {
+                s_Logger.Error("Invalid arguments.");
                 s_Logger.Info("Try `--help` for more information.");
                 return;
             }
 
-            Run(parameters[0], parameters[1], parameters[2], parameters[3]);
+            Run(runTimeParameters);
         }
 
         private static void ShowHelp(OptionSet p_OptionSet)
@@ -64,41 +62,51 @@ namespace Nure
         /// <summary>
         /// Updates nuget dependencies and creates a pull request.
         /// </summary>
-        /// <param name="p_DirectoryPath">Absolute path to the repository to update.</param>
-        /// <param name="p_GitApiKey">API key to use to push commits.</param>
-        /// <param name="p_HostingUsername">Username used with the hosting platform.</param>
-        /// <param name="p_HostingPassword">Password used with the hosting platform.</param>
-        private static void Run(string p_DirectoryPath,
-            string p_GitApiKey,
-            string p_HostingUsername,
-            string p_HostingPassword)
+        /// <param name="p_TimeParameters">Parameters Poco.</param>
+        private static void Run(RunTimeParameters p_TimeParameters)
         {
-            TextReader json = File.OpenText(Path.Combine(p_DirectoryPath, CONFIGURATION_FILE_NAME));
-            NureOptions nureOptions = JsonSerializer.CreateDefault().Deserialize<NureOptions>(new JsonTextReader(json));
-            s_Logger.Info(nureOptions.ToString);
-
-            var gitWrapper = new GitAgent(nureOptions.CommitMessage, nureOptions.DefaultBranch);
+            NureOptions nureOptions;
 
             try {
-                gitWrapper.CreateRepository(p_DirectoryPath);
-                gitWrapper.Fetch("origin");
-                gitWrapper.SetupBranch();
+                TextReader json = File.OpenText(Path.Combine(p_TimeParameters.DirectoryPath, CONFIGURATION_FILE_NAME));
+                nureOptions = JsonSerializer.CreateDefault().Deserialize<NureOptions>(new JsonTextReader(json));
+                s_Logger.Info(nureOptions.ToString);
+            } catch (FileNotFoundException exception) {
+                s_Logger.Error($"Could not locate the file. {exception.Message}");
+                return;
+            }
+
+            var gitWrapper = new GitAgent(nureOptions.CommitMessage);
+
+            string remoteName = "origin";
+
+            try {
+                gitWrapper.CreateRepository(p_TimeParameters.DirectoryPath);
+                gitWrapper.Fetch(remoteName);
+                gitWrapper.SetupBranch(nureOptions.NureBranchPrefix, remoteName);
             } catch (LibGit2SharpException exception) {
                 s_Logger.Error($"Could not setup the branch. {exception.Message}");
                 return;
             } catch (InvalidProgramException exception) {
                 s_Logger.Error($"Could not create the repository. {exception.Message}");
+                return;
             }
 
-            NuKeeperWrapper nukeeper = new NuKeeperWrapper(nureOptions, p_DirectoryPath);
+            NuKeeperWrapper nukeeper = new NuKeeperWrapper(nureOptions, p_TimeParameters.DirectoryPath);
             nukeeper.Run();
             s_Logger.Info("Run Complete");
 
             gitWrapper.Stage();
+            //todo get them from the options file
             Identity identity = new Identity("Jenkins", "SomeEmail@email.com");
             Signature signature = new Signature(identity, DateTimeOffset.Now);
 
-            gitWrapper.Commit(signature);
+            try {
+                gitWrapper.Commit(signature);
+                gitWrapper.Push(p_TimeParameters);
+            } catch (LibGit2SharpException exception) {
+                s_Logger.Error($"Could not setup the branch. {exception.Message}");
+            }
         }
     }
 }
