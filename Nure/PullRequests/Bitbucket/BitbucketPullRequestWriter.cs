@@ -1,5 +1,6 @@
 // Copyright (c) 2005-2020, Coveo Solutions Inc.
 
+using System.Linq;
 using Bitbucket.Cloud.Net;
 using Bitbucket.Cloud.Net.Common.Authentication;
 using Bitbucket.Cloud.Net.Models.v2;
@@ -24,15 +25,18 @@ namespace Nure.PullRequests.Bitbucket
         {
             BitbucketRepository repository = new BitbucketRepository(m_NureOptions.HostingUrl);
 
-            BitbucketCloudClient cloudClient = new BitbucketCloudClient(repository.BaseUrl, m_BasicAuthentication);
-            cloudClient.CreateRepositoryPullRequestAsync(repository.WorkspaceId, repository.RepositoryId, new PullRequestCreationParameters {
+            var cloudClient = new BitbucketCloudClient(repository.BaseUrl, m_BasicAuthentication);
+            var reviewers = cloudClient.GetRepositoryDefaultReviewersAsync(repository.WorkspaceId, repository.RepositoryId, 1).Result.Select(reviewer => new HasUuid { Uuid = reviewer.Uuid });
+            var creationParameters = new PullRequestCreationParameters {
                 CloseSourceBranch = true,
                 Description = m_NureOptions.PullRequestDescription,
-                Destination = new Branch { Name = m_NureOptions.DefaultBranch },
-                Reviewers = cloudClient.GetRepositoryDefaultReviewersAsync(repository.WorkspaceId, repository.RepositoryId, 1).Result,
-                Title = "NuRe Dependency Update",
-                Source = new Branch { Name = p_BranchName }
-            }).Wait();
+                Destination = new BranchInfo { Branch = new Branch { Name = m_NureOptions.DefaultBranch } },
+                Reviewers = reviewers,
+                Title = m_NureOptions.PullRequestTitle,
+                Source = new BranchInfo { Branch = new Branch { Name = p_BranchName } }
+            };
+
+            cloudClient.CreateRepositoryPullRequestAsync(repository.WorkspaceId, repository.RepositoryId, creationParameters).Wait();
         }
     }
 }
