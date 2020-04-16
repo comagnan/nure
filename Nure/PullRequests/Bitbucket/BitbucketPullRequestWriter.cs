@@ -1,5 +1,3 @@
-// Copyright (c) 2005-2020, Coveo Solutions Inc.
-
 using System.Linq;
 using Bitbucket.Cloud.Net;
 using Bitbucket.Cloud.Net.Common.Authentication;

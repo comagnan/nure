@@ -1,5 +1,3 @@
-// Copyright (c) 2005-2020, Coveo Solutions Inc.
-
 using GitHub;
 using Nure.Configuration;
 
@@ -16,7 +14,7 @@ namespace Nure.PullRequests
             m_NureOptions = p_NureOptions;
             m_AccessToken = p_AccessToken;
         }
-        
+
         public void WritePullRequest(string p_BranchName)
         {
             GitHubClient client = new GitHubClient(new OAuth2Token(m_AccessToken));

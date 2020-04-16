@@ -1,5 +1,3 @@
-// Copyright (c) 2005-2020, Coveo Solutions Inc.
-
 using System.Collections.Generic;
 
 namespace Nure.Configuration

@@ -1,5 +1,3 @@
-// Copyright (c) 2005-2020, Coveo Solutions Inc.
-
 namespace Nure.Update
 {
     public class RunTimeParameters
