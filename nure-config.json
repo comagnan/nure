@@ -1,6 +1,6 @@
 {
   "HostingService": "bitbucket",
-  "HostingUrl": "https://api.bitbucket.org/project/repository/",
+  "HostingUrl": "https://bitbucket.org/project/repository/",
   "DefaultBranch": "master",
   "NureBranchPrefix": "nure/",
   "CommitMessage": "[Version bump]",

@@ -1,5 +1,6 @@
 // Copyright (c) 2005-2020, Coveo Solutions Inc.
 
+using System;
 using System.IO;
 using System.Linq;
 using LibGit2Sharp;
@@ -37,14 +38,30 @@ namespace Nure.RepositoryManager
             m_Repository = new Repository(p_DirectoryPath);
         }
 
-        public void Fetch(string p_RemoteName)
+        public void Fetch(RunTimeParameters p_Parameters,
+            string p_RemoteName,
+            string p_HostingUrl)
         {
+            FetchOptions options = new FetchOptions {
+                CredentialsProvider = (url,
+                        usernameFromUrl,
+                        types) =>
+                    new UsernamePasswordCredentials { Username = p_Parameters.Username, Password = p_Parameters.Password }
+            };
+
+            s_Logger.Debug($"Fetching remote: {p_RemoteName}");
+            string remoteUrl = new Uri(p_HostingUrl).AbsoluteUri;
+            void ActionUpdater(RemoteUpdater p_I) => p_I.Url = remoteUrl;
+            m_Repository.Network.Remotes.Update(p_RemoteName, (Action<RemoteUpdater>) ActionUpdater);
+
             var remote = m_Repository.Network.Remotes[p_RemoteName];
+            s_Logger.Debug($"Remote Url remote: {remote.Url}");
             var refSpecs = remote.FetchRefSpecs.Select(x => x.Specification);
-            Commands.Fetch(m_Repository, remote.Name, refSpecs, null, "Fetching the latest changes.");
+            Commands.Fetch(m_Repository, remote.Name, refSpecs, options, "Fetching the latest changes.");
         }
 
-        public string SetupBranch(string p_BranchNamePrefix, string p_RemoteName)
+        public string SetupBranch(string p_BranchNamePrefix,
+            string p_RemoteName)
         {
             //todo Create logic for branch name
             string ticketName = "INNO-001";
@@ -52,9 +69,15 @@ namespace Nure.RepositoryManager
             m_BranchName = $"{p_BranchNamePrefix}{ticketName}_{guid}";
             s_Logger.Info($"Branch: {m_BranchName}");
 
-            if (m_Repository.Branches[m_BranchName] != null) return null;
+            Branch localBranch;
 
-            var localBranch = m_Repository.CreateBranch(m_BranchName);
+            if (m_Repository.Branches[m_BranchName] == null) {
+                localBranch = m_Repository.CreateBranch(m_BranchName);
+            } else {
+                //todo will not checkout due to a conflict if there are files there already
+                localBranch = m_Repository.Branches[m_BranchName];
+            }
+
             Commands.Checkout(m_Repository, localBranch);
             var remote = m_Repository.Network.Remotes[p_RemoteName];
 
@@ -76,7 +99,7 @@ namespace Nure.RepositoryManager
         public void Commit(Signature p_Signature)
         {
             RepositoryStatus status = m_Repository.RetrieveStatus();
-            if(!status.IsDirty) return;
+            if (!status.IsDirty) return;
 
             string commitMessage = $"{m_CommitMessagePrefix} - Dependency Update";
             s_Logger.Info($"Commit message. {commitMessage}");
