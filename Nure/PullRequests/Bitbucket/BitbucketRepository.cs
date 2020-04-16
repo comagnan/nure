@@ -1,5 +1,3 @@
-// Copyright (c) 2005-2020, Coveo Solutions Inc.
-
 using System;
 
 namespace Nure.PullRequests.Bitbucket
@@ -13,7 +11,7 @@ namespace Nure.PullRequests.Bitbucket
             WorkspaceId = bitbucketUri.Segments[1].TrimEnd('/');
             RepositoryId = bitbucketUri.Segments[2].TrimEnd('/');
         }
-        
+
         public string BaseUrl { get; set; }
         public string WorkspaceId { get; set; }
         public string RepositoryId { get; set; }
