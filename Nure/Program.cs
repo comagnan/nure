@@ -83,13 +83,16 @@ namespace Nure
 
             try {
                 gitWrapper.CreateRepository(p_RuntimeParameters.DirectoryPath);
-                gitWrapper.Fetch(remoteName);
+                gitWrapper.Fetch(p_RuntimeParameters, remoteName, nureOptions.HostingUrl);
                 branchName = gitWrapper.SetupBranch(nureOptions.NureBranchPrefix, remoteName);
             } catch (LibGit2SharpException exception) {
                 s_Logger.Error($"Could not setup the branch. {exception.Message}");
                 return;
             } catch (InvalidProgramException exception) {
                 s_Logger.Error($"Could not create the repository. {exception.Message}");
+                return;
+            } catch (UriFormatException exception) {
+                s_Logger.Error($"Could not fetch the repository. Hosting Url: {nureOptions.HostingUrl}. {exception.Message}");
                 return;
             }
 
@@ -107,6 +110,7 @@ namespace Nure
                 gitWrapper.Push(p_RuntimeParameters);
             } catch (LibGit2SharpException exception) {
                 s_Logger.Error($"Could not setup the branch. {exception.Message}");
+                return;
             }
 
             var pullRequestWriterFactory = new PullRequestWriterFactory(nureOptions, p_RuntimeParameters.Username, p_RuntimeParameters.Password);

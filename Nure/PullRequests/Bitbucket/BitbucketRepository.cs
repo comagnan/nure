@@ -9,7 +9,7 @@ namespace Nure.PullRequests.Bitbucket
         public BitbucketRepository(string p_FullPath)
         {
             Uri bitbucketUri = new Uri(p_FullPath);
-            BaseUrl = $"https://{bitbucketUri.Authority}";
+            BaseUrl = $"https://api.{bitbucketUri.Authority}";
             WorkspaceId = bitbucketUri.Segments[1].TrimEnd('/');
             RepositoryId = bitbucketUri.Segments[2].TrimEnd('/');
         }
