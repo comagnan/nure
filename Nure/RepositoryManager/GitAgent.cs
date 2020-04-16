@@ -46,13 +46,13 @@ namespace Nure.RepositoryManager
             Commands.Fetch(m_Repository, remote.Name, refSpecs, null, "Fetching the latest changes.");
         }
 
-        public void SetupBranch()
+        public string SetupBranch()
         {
             Branch defaultBranch = m_Repository.Branches[m_DefaultBranch];
 
             if (defaultBranch == null) {
                 s_Logger.Error("Could not locate the default branch.");
-                return;
+                return null;
             }
 
             //Checkout default branch
@@ -65,6 +65,7 @@ namespace Nure.RepositoryManager
             s_Logger.Info($"Branch: {branchName}");
 
             Commands.Checkout(m_Repository, m_Repository.CreateBranch(branchName));
+            return branchName;
         }
 
         public void Stage()

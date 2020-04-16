@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2005-2020, Coveo Solutions Inc.
+// Copyright (c) 2005-2020, Coveo Solutions Inc.
 
 using System;
 using System.Collections.Generic;
@@ -8,6 +8,7 @@ using NDesk.Options;
 using Newtonsoft.Json;
 using NLog;
 using Nure.Configuration;
+using Nure.PullRequests;
 using Nure.RepositoryManager;
 using Nure.Update;
 
@@ -75,14 +76,15 @@ namespace Nure
         {
             TextReader json = File.OpenText(Path.Combine(p_DirectoryPath, CONFIGURATION_FILE_NAME));
             NureOptions nureOptions = JsonSerializer.CreateDefault().Deserialize<NureOptions>(new JsonTextReader(json));
-            s_Logger.Info(nureOptions.ToString);
+            s_Logger.Info("Launching NuRe with the following configuration:\n" + nureOptions);
 
             var gitWrapper = new GitAgent(nureOptions.CommitMessage, nureOptions.DefaultBranch);
-
+            string branchName;
             try {
                 gitWrapper.CreateRepository(p_DirectoryPath);
                 gitWrapper.Fetch("origin");
-                gitWrapper.SetupBranch();
+                branchName = gitWrapper.SetupBranch();
+                if (branchName == null) return;
             } catch (LibGit2SharpException exception) {
                 s_Logger.Error($"Could not setup the branch. {exception.Message}");
                 return;
@@ -99,6 +101,8 @@ namespace Nure
             Signature signature = new Signature(identity, DateTimeOffset.Now);
 
             gitWrapper.Commit(signature);
+            var pullRequestWriterFactory = new PullRequestWriterFactory(nureOptions, p_HostingUsername, p_HostingPassword);
+            pullRequestWriterFactory.Create().WritePullRequest(branchName);
         }
     }
 }

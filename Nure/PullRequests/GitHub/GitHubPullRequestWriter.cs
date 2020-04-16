@@ -17,7 +17,7 @@ namespace Nure.PullRequests
             m_AccessToken = p_AccessToken;
         }
         
-        public void Write(string p_BranchName)
+        public void WritePullRequest(string p_BranchName)
         {
             GitHubClient client = new GitHubClient(new OAuth2Token(m_AccessToken));
             throw new System.NotImplementedException();

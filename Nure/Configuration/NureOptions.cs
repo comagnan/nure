@@ -16,6 +16,7 @@ namespace Nure.Configuration
         }
 
         public string HostingService { get; set; }
+        public string HostingUrl { get; set; }
         public string DefaultBranch { get; set; }
         public string NureBranchPrefix { get; set; }
         public string CommitMessage { get; set; }
@@ -27,12 +28,13 @@ namespace Nure.Configuration
         public override string ToString()
         {
             return $"Hosting Service: {HostingService},\n" +
+                $"Hosting Url: {HostingUrl},\n" +
                 $"Default Branch: {DefaultBranch},\n" +
                 $"NuRe Branch Prefix: {NureBranchPrefix},\n" +
                 $"Commit Message: {CommitMessage},\n" +
                 $"Pull Request Description: {PullRequestDescription ?? "null"},\n" +
-                $"Custom NuGet Sources: {CustomNugetSources},\n" +
-                $"Packages To Ignore: {PackagesToIgnore},\n" +
+                $"Custom NuGet Sources: [{string.Join(",", CustomNugetSources)}],\n" +
+                $"Packages To Ignore: [{string.Join(",", PackagesToIgnore)}],\n" +
                 $"Allow Prerelease Dependencies: {AllowPrereleaseDependencies}\n";
         }
     }

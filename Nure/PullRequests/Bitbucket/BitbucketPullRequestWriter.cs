@@ -5,7 +5,7 @@ using Bitbucket.Cloud.Net.Common.Authentication;
 using Bitbucket.Cloud.Net.Models.v2;
 using Nure.Configuration;
 
-namespace Nure.PullRequests
+namespace Nure.PullRequests.Bitbucket
 {
     public class BitbucketPullRequestWriter : IPullRequestWriter
     {
@@ -19,23 +19,20 @@ namespace Nure.PullRequests
             m_NureOptions = p_NureOptions;
             m_BasicAuthentication = new BasicAuthentication(p_BitbucketUsername, p_BitbucketPassword);
         }
-
-        public void Write(string p_BranchName)
+        
+        public void WritePullRequest(string p_BranchName)
         {
-            string destinationBranch = m_NureOptions.DefaultBranch;
-            string pullRequestDescription = m_NureOptions.PullRequestDescription;
-            
-            BitbucketCloudClient cloudClient = new BitbucketCloudClient("", m_BasicAuthentication);
-            cloudClient.CreateRepositoryPullRequestAsync("frick", "frick", new PullRequestCreationParameters {
+            BitbucketRepository repository = new BitbucketRepository(m_NureOptions.HostingUrl);
+
+            BitbucketCloudClient cloudClient = new BitbucketCloudClient(repository.BaseUrl, m_BasicAuthentication);
+            cloudClient.CreateRepositoryPullRequestAsync(repository.WorkspaceId, repository.RepositoryId, new PullRequestCreationParameters {
                 CloseSourceBranch = true,
                 Description = m_NureOptions.PullRequestDescription,
-                Destination = new HasName(),
-                Reviewers = cloudClient.GetRepositoryDefaultReviewersAsync("frick", "frick", 1).Result,
+                Destination = new Branch { Name = m_NureOptions.DefaultBranch },
+                Reviewers = cloudClient.GetRepositoryDefaultReviewersAsync(repository.WorkspaceId, repository.RepositoryId, 1).Result,
                 Title = "NuRe Dependency Update",
-                Source = new HasName()
+                Source = new Branch { Name = p_BranchName }
             }).Wait();
-            
-            throw new System.NotImplementedException();
         }
     }
 }

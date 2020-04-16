@@ -1,5 +1,6 @@
 {
   "HostingService": "bitbucket",
+  "HostingUrl": "https://github.com/comagnan/nure/",
   "DefaultBranch": "master",
   "NureBranchPrefix": "nure/",
   "CommitMessage": "[Version bump]",
