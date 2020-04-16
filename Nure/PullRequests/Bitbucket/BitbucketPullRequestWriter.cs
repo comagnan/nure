@@ -19,7 +19,7 @@ namespace Nure.PullRequests.Bitbucket
             m_NureOptions = p_NureOptions;
             m_BasicAuthentication = new BasicAuthentication(p_BitbucketUsername, p_BitbucketPassword);
         }
-        
+
         public void WritePullRequest(string p_BranchName)
         {
             BitbucketRepository repository = new BitbucketRepository(m_NureOptions.HostingUrl);

@@ -1,11 +1,11 @@
 {
   "HostingService": "bitbucket",
-  "HostingUrl": "https://github.com/comagnan/nure/",
+  "HostingUrl": "https://api.bitbucket.org/project/repository/",
   "DefaultBranch": "master",
   "NureBranchPrefix": "nure/",
   "CommitMessage": "[Version bump]",
   "PullRequestDescription": null,
   "AllowPrereleaseDependencies": false,
   "CustomNugetSources": [],
-  "PackagesToIgnore": []
+  "PackagesToIgnore": ["evilparam"]
 }
