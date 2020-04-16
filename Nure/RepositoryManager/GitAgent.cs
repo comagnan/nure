@@ -1,11 +1,11 @@
 // Copyright (c) 2005-2020, Coveo Solutions Inc.
 
-using System;
 using System.IO;
 using System.Linq;
 using LibGit2Sharp;
 using NLog;
 using Nure.RepositoryManager.Exceptions;
+using Nure.Update;
 
 namespace Nure.RepositoryManager
 {
@@ -14,14 +14,12 @@ namespace Nure.RepositoryManager
         private static readonly ILogger s_Logger = LogManager.GetCurrentClassLogger();
 
         private Repository m_Repository;
+        private string m_BranchName;
         private readonly string m_CommitMessagePrefix;
-        private readonly string m_DefaultBranch;
 
-        public GitAgent(string p_CommitMessagePrefix,
-            string p_DefaultBranch)
+        public GitAgent(string p_CommitMessagePrefix)
         {
             m_CommitMessagePrefix = p_CommitMessagePrefix;
-            m_DefaultBranch = p_DefaultBranch;
         }
 
         public void CreateRepository(string p_DirectoryPath)
@@ -46,42 +44,58 @@ namespace Nure.RepositoryManager
             Commands.Fetch(m_Repository, remote.Name, refSpecs, null, "Fetching the latest changes.");
         }
 
-        public void SetupBranch()
+        public void SetupBranch(string p_BranchNamePrefix, string p_RemoteName)
         {
-            Branch defaultBranch = m_Repository.Branches[m_DefaultBranch];
-
-            if (defaultBranch == null) {
-                s_Logger.Error("Could not locate the default branch.");
-                return;
-            }
-
-            //Checkout default branch
-            Commands.Checkout(m_Repository, defaultBranch);
-
             //todo Create logic for branch name
             string ticketName = "INNO-001";
             string guid = "alpha1234";
-            string branchName = $"Nure_{ticketName}_{guid}";
-            s_Logger.Info($"Branch: {branchName}");
+            m_BranchName = $"{p_BranchNamePrefix}{ticketName}_{guid}";
+            s_Logger.Info($"Branch: {m_BranchName}");
 
-            Commands.Checkout(m_Repository, m_Repository.CreateBranch(branchName));
+            if (m_Repository.Branches[m_BranchName] != null) return;
+
+            var localBranch = m_Repository.CreateBranch(m_BranchName);
+            Commands.Checkout(m_Repository, localBranch);
+
+            var remote = m_Repository.Network.Remotes[p_RemoteName];
+
+            m_Repository.Branches.Update(localBranch,
+                b => b.Remote = remote.Name,
+                b => b.UpstreamBranch = localBranch.CanonicalName);
         }
 
         public void Stage()
         {
-            m_Repository.Diff.Compare<TreeChanges>().ToList().ForEach(change => s_Logger.Info($"Change: {change.Status}. File name: {change.Path}"));
+            m_Repository.Diff.Compare<TreeChanges>().ToList().ForEach(change => s_Logger.Info($"{change.Status}: {change.Path}"));
 
             s_Logger.Info("Staging the changes.");
-            Commands.Stage(m_Repository, "*");
+            Commands.Stage(m_Repository, "*.csproj");
+            Commands.Stage(m_Repository, "*.sln");
         }
 
         public void Commit(Signature p_Signature)
         {
-            string commitMessage = $"{m_CommitMessagePrefix} - Some commit message";
+            RepositoryStatus status = m_Repository.RetrieveStatus();
+            if(!status.IsDirty) return;
+
+            string commitMessage = $"{m_CommitMessagePrefix} - Dependency Update";
             s_Logger.Info($"Commit message. {commitMessage}");
 
             s_Logger.Info("Commiting the changes.");
             m_Repository.Commit(commitMessage, p_Signature, p_Signature, null);
+        }
+
+        public void Push(RunTimeParameters p_Parameters)
+        {
+            s_Logger.Info($"Pushing {m_BranchName}.");
+            PushOptions options = new PushOptions {
+                CredentialsProvider = (url,
+                        usernameFromUrl,
+                        types) =>
+                    new UsernamePasswordCredentials { Username = p_Parameters.Username, Password = p_Parameters.Password }
+            };
+            m_Repository.Network.Push(m_Repository.Branches[m_BranchName], options);
+            s_Logger.Info("Push Complete.");
         }
     }
 }
