@@ -44,7 +44,7 @@ namespace Nure.RepositoryManager
             Commands.Fetch(m_Repository, remote.Name, refSpecs, null, "Fetching the latest changes.");
         }
 
-        public void SetupBranch(string p_BranchNamePrefix, string p_RemoteName)
+        public string SetupBranch(string p_BranchNamePrefix, string p_RemoteName)
         {
             //todo Create logic for branch name
             string ticketName = "INNO-001";
@@ -52,16 +52,16 @@ namespace Nure.RepositoryManager
             m_BranchName = $"{p_BranchNamePrefix}{ticketName}_{guid}";
             s_Logger.Info($"Branch: {m_BranchName}");
 
-            if (m_Repository.Branches[m_BranchName] != null) return;
+            if (m_Repository.Branches[m_BranchName] != null) return null;
 
             var localBranch = m_Repository.CreateBranch(m_BranchName);
             Commands.Checkout(m_Repository, localBranch);
-
             var remote = m_Repository.Network.Remotes[p_RemoteName];
 
             m_Repository.Branches.Update(localBranch,
                 b => b.Remote = remote.Name,
                 b => b.UpstreamBranch = localBranch.CanonicalName);
+            return m_BranchName;
         }
 
         public void Stage()

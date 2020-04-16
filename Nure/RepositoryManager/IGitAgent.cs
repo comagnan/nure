@@ -9,7 +9,7 @@ namespace Nure.RepositoryManager
     {
         void CreateRepository(string p_DirectoryPath);
         void Fetch(string p_RemoteName);
-        void SetupBranch(string p_BranchNamePrefix, string p_RemoteName);
+        string SetupBranch(string p_BranchNamePrefix, string p_RemoteName);
         void Stage();
         void Commit(Signature p_Signature);
         void Push(RunTimeParameters p_Parameters);

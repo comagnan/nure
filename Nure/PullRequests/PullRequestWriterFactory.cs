@@ -1,4 +1,5 @@
 using Nure.Configuration;
+using Nure.PullRequests.Bitbucket;
 
 namespace Nure.PullRequests
 {

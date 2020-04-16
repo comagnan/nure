@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2005-2020, Coveo Solutions Inc.
+// Copyright (c) 2005-2020, Coveo Solutions Inc.
 
 using System;
 using System.IO;
@@ -7,6 +7,7 @@ using NDesk.Options;
 using Newtonsoft.Json;
 using NLog;
 using Nure.Configuration;
+using Nure.PullRequests;
 using Nure.RepositoryManager;
 using Nure.Update;
 
@@ -62,28 +63,28 @@ namespace Nure
         /// <summary>
         /// Updates nuget dependencies and creates a pull request.
         /// </summary>
-        /// <param name="p_TimeParameters">Parameters Poco.</param>
-        private static void Run(RunTimeParameters p_TimeParameters)
+        /// <param name="p_RuntimeParameters">Parameters Poco.</param>
+        private static void Run(RunTimeParameters p_RuntimeParameters)
         {
             NureOptions nureOptions;
 
             try {
-                TextReader json = File.OpenText(Path.Combine(p_TimeParameters.DirectoryPath, CONFIGURATION_FILE_NAME));
+                TextReader json = File.OpenText(Path.Combine(p_RuntimeParameters.DirectoryPath, CONFIGURATION_FILE_NAME));
                 nureOptions = JsonSerializer.CreateDefault().Deserialize<NureOptions>(new JsonTextReader(json));
-                s_Logger.Info(nureOptions.ToString);
+                s_Logger.Info("Launching NuRe with the following configuration:\n" + nureOptions);
             } catch (FileNotFoundException exception) {
                 s_Logger.Error($"Could not locate the file. {exception.Message}");
                 return;
             }
 
             var gitWrapper = new GitAgent(nureOptions.CommitMessage);
-
             string remoteName = "origin";
+            string branchName;
 
             try {
-                gitWrapper.CreateRepository(p_TimeParameters.DirectoryPath);
+                gitWrapper.CreateRepository(p_RuntimeParameters.DirectoryPath);
                 gitWrapper.Fetch(remoteName);
-                gitWrapper.SetupBranch(nureOptions.NureBranchPrefix, remoteName);
+                branchName = gitWrapper.SetupBranch(nureOptions.NureBranchPrefix, remoteName);
             } catch (LibGit2SharpException exception) {
                 s_Logger.Error($"Could not setup the branch. {exception.Message}");
                 return;
@@ -92,7 +93,7 @@ namespace Nure
                 return;
             }
 
-            NuKeeperWrapper nukeeper = new NuKeeperWrapper(nureOptions, p_TimeParameters.DirectoryPath);
+            NuKeeperWrapper nukeeper = new NuKeeperWrapper(nureOptions, p_RuntimeParameters.DirectoryPath);
             nukeeper.Run();
             s_Logger.Info("Run Complete");
 
@@ -103,10 +104,13 @@ namespace Nure
 
             try {
                 gitWrapper.Commit(signature);
-                gitWrapper.Push(p_TimeParameters);
+                gitWrapper.Push(p_RuntimeParameters);
             } catch (LibGit2SharpException exception) {
                 s_Logger.Error($"Could not setup the branch. {exception.Message}");
             }
+
+            var pullRequestWriterFactory = new PullRequestWriterFactory(nureOptions, p_RuntimeParameters.Username, p_RuntimeParameters.Password);
+            pullRequestWriterFactory.Create().WritePullRequest(branchName);
         }
     }
 }

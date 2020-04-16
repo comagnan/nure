@@ -4,6 +4,6 @@ namespace Nure.PullRequests
 {
     public interface IPullRequestWriter
     {
-        void Write(string p_BranchName);
+        void WritePullRequest(string p_BranchName);
     }
 }
