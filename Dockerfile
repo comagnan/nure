@@ -1,9 +1,9 @@
 FROM mcr.microsoft.com/dotnet/core/sdk:2.1 AS build
 COPY *.sln .
 COPY Nure/ ./Nure/
-WORKDIR Nure/
 ENV PATH="/root/.dotnet/tools:${PATH}"
 RUN dotnet restore
+ENTRYPOINT ["dotnet", "run", "--project", "/Nure", "--"]
 
 # copy csproj and restore as distinct layers
 #COPY *.sln .
