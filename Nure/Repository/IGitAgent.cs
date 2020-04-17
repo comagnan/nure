@@ -1,7 +1,7 @@
 using LibGit2Sharp;
 using Nure.Update;
 
-namespace Nure.RepositoryManager
+namespace Nure.Repository
 {
     public interface IGitAgent
     {

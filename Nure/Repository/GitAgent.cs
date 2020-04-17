@@ -1,18 +1,17 @@
-using System;
 using System.IO;
 using System.Linq;
 using LibGit2Sharp;
 using NLog;
-using Nure.RepositoryManager.Exceptions;
+using Nure.Repository.Exceptions;
 using Nure.Update;
 
-namespace Nure.RepositoryManager
+namespace Nure.Repository
 {
     public class GitAgent : IGitAgent
     {
         private static readonly ILogger s_Logger = LogManager.GetCurrentClassLogger();
 
-        private Repository m_Repository;
+        private LibGit2Sharp.Repository m_Repository;
         private string m_BranchName;
         private readonly string m_CommitMessagePrefix;
 
@@ -28,12 +27,12 @@ namespace Nure.RepositoryManager
                 throw new InvalidDirectoryException("Invalid directory provided.");
             }
 
-            if (!Repository.IsValid(p_DirectoryPath)) {
+            if (!LibGit2Sharp.Repository.IsValid(p_DirectoryPath)) {
                 s_Logger.Error($"This is not a valid git repository. Path Provided Repository: {p_DirectoryPath}");
                 throw new InvalidRepositoryException("This is not a valid git repository.");
             }
 
-            m_Repository = new Repository(p_DirectoryPath);
+            m_Repository = new LibGit2Sharp.Repository(p_DirectoryPath);
         }
 
         public void Fetch(RunTimeParameters p_Parameters,

@@ -1,3 +1,4 @@
+using Flurl.Http;
 using Nure.Configuration;
 using Nure.PullRequests.Bitbucket;
 
@@ -23,15 +24,14 @@ namespace Nure.PullRequests
 
         public IPullRequestWriter Create()
         {
-            if (m_NureOptions.HostingService.ToLowerInvariant() == BITBUCKET_HOSTING_SERVICE) {
-                return new BitbucketPullRequestWriter(m_NureOptions, m_HostingUsername, m_HostingPassword);
+            switch (m_NureOptions.HostingService.ToLowerInvariant()) {
+                case BITBUCKET_HOSTING_SERVICE:
+                    return new BitbucketPullRequestWriter(m_NureOptions, new BitbucketClient(m_NureOptions.HostingUrl, m_HostingUsername, m_HostingPassword, new FlurlClient()));
+                case GITHUB_HOSTING_SERVICE:
+                    return new GitHubPullRequestWriter(m_NureOptions, m_HostingPassword);
+                default:
+                    throw new System.NotImplementedException($"Hosting service {m_NureOptions.HostingService} is not supported by NuRe.");
             }
-
-            if (m_NureOptions.HostingService.ToLowerInvariant() == GITHUB_HOSTING_SERVICE) {
-                return new GitHubPullRequestWriter(m_NureOptions, m_HostingPassword);
-            }
-
-            throw new System.NotImplementedException($"Hosting service {m_NureOptions.HostingService} is not supported by NuRe.");
         }
     }
 }
