@@ -1,40 +1,38 @@
+using System.Collections.Generic;
 using System.Linq;
-using Bitbucket.Cloud.Net;
-using Bitbucket.Cloud.Net.Common.Authentication;
-using Bitbucket.Cloud.Net.Models.v2;
+using NLog;
 using Nure.Configuration;
+using Nure.PullRequests.Bitbucket.Models;
 
 namespace Nure.PullRequests.Bitbucket
 {
     public class BitbucketPullRequestWriter : IPullRequestWriter
     {
+        private static readonly ILogger s_Logger = LogManager.GetCurrentClassLogger();
+
         private readonly NureOptions m_NureOptions;
-        private readonly BasicAuthentication m_BasicAuthentication;
+        private readonly IBitbucketClient m_BitbucketClient;
 
         public BitbucketPullRequestWriter(NureOptions p_NureOptions,
-            string p_BitbucketUsername,
-            string p_BitbucketPassword)
+            IBitbucketClient p_BitbucketClient)
         {
             m_NureOptions = p_NureOptions;
-            m_BasicAuthentication = new BasicAuthentication(p_BitbucketUsername, p_BitbucketPassword);
+            m_BitbucketClient = p_BitbucketClient;
         }
 
         public void WritePullRequest(string p_BranchName)
         {
-            BitbucketRepository repository = new BitbucketRepository(m_NureOptions.HostingUrl);
-
-            var cloudClient = new BitbucketCloudClient(repository.BaseUrl, m_BasicAuthentication);
-            var reviewers = cloudClient.GetRepositoryDefaultReviewersAsync(repository.WorkspaceId, repository.RepositoryId, 1).Result.Select(reviewer => new HasUuid { Uuid = reviewer.Uuid });
-            var creationParameters = new PullRequestCreationParameters {
-                CloseSourceBranch = true,
-                Description = m_NureOptions.PullRequestDescription,
-                Destination = new BranchInfo { Branch = new Branch { Name = m_NureOptions.DefaultBranch } },
-                Reviewers = reviewers,
+            BitbucketUser currentUser = m_BitbucketClient.GetCurrentUser();
+            List<BitbucketUser> defaultReviewers = m_BitbucketClient.GetDefaultReviewers().Where(reviewer => reviewer.UserId != currentUser.UserId).ToList();
+            BitbucketPullRequest pullRequest = new BitbucketPullRequest {
                 Title = m_NureOptions.PullRequestTitle,
-                Source = new BranchInfo { Branch = new Branch { Name = p_BranchName } }
+                Description = m_NureOptions.PullRequestDescription,
+                SourceBranch = new BitbucketBranchInfo { Branch = new BitbucketBranch { Name = p_BranchName } },
+                DestinationBranch = new BitbucketBranchInfo { Branch = new BitbucketBranch { Name = m_NureOptions.DefaultBranch } },
+                Reviewers = defaultReviewers,
+                CloseBranchAfterMerge = true
             };
-
-            cloudClient.CreateRepositoryPullRequestAsync(repository.WorkspaceId, repository.RepositoryId, creationParameters).Wait();
+            m_BitbucketClient.SendPullRequest(pullRequest);
         }
     }
 }

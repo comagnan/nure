@@ -7,7 +7,7 @@ namespace Nure.Update
 {
     public class NuKeeperWrapper
     {
-        private static ILogger s_Logger = LogManager.GetCurrentClassLogger();
+        private static readonly ILogger s_Logger = LogManager.GetCurrentClassLogger();
         private const string NUKEEPER_INSTALLATION_COMMAND = "dotnet tool install nukeeper --global";
 
         private readonly NureOptions m_NureOptions;

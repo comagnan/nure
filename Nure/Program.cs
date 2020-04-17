@@ -6,14 +6,14 @@ using Newtonsoft.Json;
 using NLog;
 using Nure.Configuration;
 using Nure.PullRequests;
-using Nure.RepositoryManager;
+using Nure.Repository;
 using Nure.Update;
 
 namespace Nure
 {
     class Program
     {
-        private static ILogger s_Logger = LogManager.GetCurrentClassLogger();
+        private static readonly ILogger s_Logger = LogManager.GetCurrentClassLogger();
         private const string CONFIGURATION_FILE_NAME = "nure-config.json";
 
         static void Main(string[] p_Args)
