@@ -1,9 +1,7 @@
-// Copyright (c) 2005-2020, Coveo Solutions Inc.
-
 using System.Collections.Generic;
-using Nure.PullRequests.Bitbucket.Models;
+using Nure.PullRequest.Bitbucket.Models;
 
-namespace Nure.PullRequests.Bitbucket
+namespace Nure.PullRequest.Bitbucket
 {
     public interface IBitbucketClient
     {

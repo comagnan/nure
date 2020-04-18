@@ -1,8 +1,10 @@
+using System;
 using Flurl.Http;
 using Nure.Configuration;
-using Nure.PullRequests.Bitbucket;
+using Nure.PullRequest.Bitbucket;
+using Nure.PullRequest.GitHub;
 
-namespace Nure.PullRequests
+namespace Nure.PullRequest
 {
     public class PullRequestWriterFactory : IPullRequestWriterFactory
     {
@@ -30,7 +32,7 @@ namespace Nure.PullRequests
                 case GITHUB_HOSTING_SERVICE:
                     return new GitHubPullRequestWriter(m_NureOptions, m_HostingPassword);
                 default:
-                    throw new System.NotImplementedException($"Hosting service {m_NureOptions.HostingService} is not supported by NuRe.");
+                    throw new NotImplementedException($"Hosting service {m_NureOptions.HostingService} is not supported by NuRe.");
             }
         }
     }

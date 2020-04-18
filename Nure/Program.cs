@@ -5,7 +5,7 @@ using NDesk.Options;
 using Newtonsoft.Json;
 using NLog;
 using Nure.Configuration;
-using Nure.PullRequests;
+using Nure.PullRequest;
 using Nure.Repository;
 using Nure.Update;
 
@@ -18,14 +18,13 @@ namespace Nure
 
         static void Main(string[] p_Args)
         {
-            RunTimeParameters runTimeParameters = new RunTimeParameters();
+            RuntimeParameters runtimeParameters = new RuntimeParameters();
 
             var optionSet = new OptionSet {
-                { "d|directory-path=", "Absolute path to the repository to update.", value => runTimeParameters.DirectoryPath = value },
-                { "g|git-api-key=", "API key to push git commits.", value => runTimeParameters.GitApiKey = value },
-                { "u|hosting-username=", "Username used with the hosting platform.", value => runTimeParameters.Username = value },
-                { "p|hosting-password=", "Password used with the hosting platform.", value => runTimeParameters.Password = value },
-                { "h|help", "Show this message", value => runTimeParameters.Help = value != null }
+                { "d|directory-path=", "Absolute path to the repository to update.", value => runtimeParameters.DirectoryPath = value },
+                { "u|hosting-username=", "Username used with the hosting platform.", value => runtimeParameters.Username = value },
+                { "p|hosting-password=", "Password used with the hosting platform.", value => runtimeParameters.Password = value },
+                { "h|help", "Show this message", value => runtimeParameters.Help = value != null }
             };
 
             try {
@@ -36,18 +35,18 @@ namespace Nure
                 return;
             }
 
-            if (runTimeParameters.Help) {
+            if (runtimeParameters.Help) {
                 ShowHelp(optionSet);
                 return;
             }
 
-            if (!runTimeParameters.Validate(false)) {
+            if (!runtimeParameters.Validate()) {
                 s_Logger.Error("Invalid arguments.");
                 s_Logger.Info("Try `--help` for more information.");
                 return;
             }
 
-            Run(runTimeParameters);
+            Run(runtimeParameters);
         }
 
         private static void ShowHelp(OptionSet p_OptionSet)
@@ -58,11 +57,7 @@ namespace Nure
             p_OptionSet.WriteOptionDescriptions(Console.Out);
         }
 
-        /// <summary>
-        /// Updates nuget dependencies and creates a pull request.
-        /// </summary>
-        /// <param name="p_RuntimeParameters">Parameters Poco.</param>
-        private static void Run(RunTimeParameters p_RuntimeParameters)
+        private static void Run(RuntimeParameters p_RuntimeParameters)
         {
             NureOptions nureOptions;
 

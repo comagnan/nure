@@ -36,7 +36,7 @@ namespace Nure.Repository
             m_Repository = new GitRepository(p_DirectoryPath);
         }
 
-        public void Fetch(RunTimeParameters p_Parameters,
+        public void Fetch(RuntimeParameters p_Parameters,
             string p_RemoteName,
             string p_HostingUrl)
         {
@@ -101,7 +101,7 @@ namespace Nure.Repository
             m_Repository.Commit(commitMessage, p_Signature, p_Signature, null);
         }
 
-        public void Push(RunTimeParameters p_Parameters)
+        public void Push(RuntimeParameters p_Parameters)
         {
             s_Logger.Info($"Pushing {m_BranchName}.");
             PushOptions options = new PushOptions {

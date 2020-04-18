@@ -1,16 +1,12 @@
 namespace Nure.Update
 {
-    public class RunTimeParameters
+    public class RuntimeParameters
     {
-        public bool Validate(bool p_IsGithubCompliant)
+        public bool Validate()
         {
             bool isValid = !string.IsNullOrEmpty(DirectoryPath) &&
                 !string.IsNullOrEmpty(Username) &&
                 !string.IsNullOrEmpty(Password);
-
-            if (p_IsGithubCompliant) {
-                return isValid && !string.IsNullOrEmpty(GitApiKey);
-            }
 
             return isValid;
         }
@@ -22,7 +18,5 @@ namespace Nure.Update
         public string Password { get; set; }
 
         public bool Help { get; set; }
-
-        public string GitApiKey { get; set; }
     }
 }

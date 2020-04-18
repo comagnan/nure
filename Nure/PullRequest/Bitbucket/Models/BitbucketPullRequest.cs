@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Nure.PullRequests.Bitbucket.Models
+namespace Nure.PullRequest.Bitbucket.Models
 {
     public class BitbucketPullRequest
     {
