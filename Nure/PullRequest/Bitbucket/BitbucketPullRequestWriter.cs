@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using System.Linq;
 using NLog;
 using Nure.Configuration;
-using Nure.PullRequests.Bitbucket.Models;
+using Nure.PullRequest.Bitbucket.Models;
 
-namespace Nure.PullRequests.Bitbucket
+namespace Nure.PullRequest.Bitbucket
 {
     public class BitbucketPullRequestWriter : IPullRequestWriter
     {
@@ -22,6 +22,8 @@ namespace Nure.PullRequests.Bitbucket
 
         public void WritePullRequest(string p_BranchName)
         {
+            s_Logger.Info("Preparing Bitbucket pull request...");
+
             BitbucketUser currentUser = m_BitbucketClient.GetCurrentUser();
             List<BitbucketUser> defaultReviewers = m_BitbucketClient.GetDefaultReviewers().Where(reviewer => reviewer.UserId != currentUser.UserId).ToList();
             BitbucketPullRequest pullRequest = new BitbucketPullRequest {
@@ -32,6 +34,7 @@ namespace Nure.PullRequests.Bitbucket
                 Reviewers = defaultReviewers,
                 CloseBranchAfterMerge = true
             };
+
             m_BitbucketClient.SendPullRequest(pullRequest);
         }
     }

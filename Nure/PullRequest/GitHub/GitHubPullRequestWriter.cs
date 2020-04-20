@@ -1,7 +1,7 @@
 using GitHub;
 using Nure.Configuration;
 
-namespace Nure.PullRequests
+namespace Nure.PullRequest.GitHub
 {
     public class GitHubPullRequestWriter : IPullRequestWriter
     {

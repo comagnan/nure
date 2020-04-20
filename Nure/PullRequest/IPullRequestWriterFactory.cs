@@ -1,4 +1,4 @@
-namespace Nure.PullRequests
+namespace Nure.PullRequest
 {
     public interface IPullRequestWriterFactory
     {
