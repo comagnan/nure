@@ -1,5 +1,3 @@
-// Copyright (c) 2005-2020, Coveo Solutions Inc.
-
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using NLog;
@@ -32,7 +30,7 @@ namespace Nure.Update
         {
             string usePrerelease = m_NureOptions.AllowPrereleaseDependencies ? "Always" : "Never";
 
-            return $"nukeeper update {m_RepositoryDirectory} --useprerelease {usePrerelease} -a 0 -m 100";
+            return $"nukeeper update {m_RepositoryDirectory} --useprerelease {usePrerelease} -a 0 -m 100 {GetExclusionMatcher()}";
         }
 
         private void ExecuteInShell(string p_Command)
@@ -70,7 +68,7 @@ namespace Nure.Update
 
         private string EscapeCommand(string p_String)
         {
-            return p_String.Replace("\"", "\\\"").Replace("/", "//");
+            return p_String.Replace("/", "//");
         }
 
         private string GetCommandParameter()
@@ -78,6 +76,16 @@ namespace Nure.Update
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return "/C";
 
             return "-c";
+        }
+
+        private string GetExclusionMatcher()
+        {
+            bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            string quote = isWindows ? "\"" : "'";
+
+            return m_NureOptions.PackagesToIgnore.Count > 0
+                ? $"-e {quote}({string.Join("|", m_NureOptions.PackagesToIgnore)}){quote}"
+                : "";
         }
     }
 }
