@@ -10,7 +10,6 @@ add-apt-repository universe && \
 apt-get update && \
 apt-get install -y apt-transport-https && \
 apt-get update && \
-apt-get install -y dotnet-sdk-2.1 && \
-dotnet restore
+apt-get install -y dotnet-sdk-2.1
 ENTRYPOINT ["dotnet", "run", "--project", "/Nure", "--"]
 
