@@ -1,6 +1,6 @@
 using System;
 
-namespace Nure.RepositoryManager.Exceptions
+namespace Nure.Repository.Exceptions
 {
     public class InvalidDirectoryException : Exception
     {
