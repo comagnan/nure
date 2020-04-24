@@ -1,5 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using Flurl.Http;
 using NLog;
 using Nure.Configuration;
 using Nure.PullRequest.Bitbucket.Models;
@@ -23,8 +26,13 @@ namespace Nure.PullRequest.Bitbucket
         public void WritePullRequest(string p_BranchName)
         {
             s_Logger.Info("Preparing Bitbucket pull request...");
+            BitbucketUser currentUser = new BitbucketUser();
+            try {
+                currentUser = m_BitbucketClient.GetCurrentUser();
+            } catch (AggregateException e) when ((e.InnerException as FlurlHttpException)?.Call.HttpStatus == HttpStatusCode.Forbidden) {
+                s_Logger.Warn("Unable to get the current user from Bitbucket. Attempting to create the pull request anyway.");
+            }
 
-            BitbucketUser currentUser = m_BitbucketClient.GetCurrentUser();
             List<BitbucketUser> defaultReviewers = m_BitbucketClient.GetDefaultReviewers().Where(reviewer => reviewer.UserId != currentUser.UserId).ToList();
             BitbucketPullRequest pullRequest = new BitbucketPullRequest {
                 Title = m_NureOptions.PullRequestTitle,
