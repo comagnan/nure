@@ -1,24 +1,17 @@
-FROM mcr.microsoft.com/dotnet/core/sdk:2.1 AS build
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build
 COPY *.sln .
 COPY Nure/ ./Nure/
 ENV PATH="/root/.dotnet/tools:${PATH}"
-RUN dotnet restore
+RUN wget -O- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.asc.gpg && \
+mv microsoft.asc.gpg /etc/apt/trusted.gpg.d/ && \
+wget https://packages.microsoft.com/config/debian/10/prod.list && \
+mv prod.list /etc/apt/sources.list.d/microsoft-prod.list && \
+chown root:root /etc/apt/trusted.gpg.d/microsoft.asc.gpg && \
+chown root:root /etc/apt/sources.list.d/microsoft-prod.list && \
+apt-get update && \
+apt-get install -y apt-transport-https && \
+apt-get update && \
+apt-get install -y dotnet-sdk-2.1 && \
+dotnet restore
 ENTRYPOINT ["dotnet", "run", "--project", "/Nure", "--"]
 
-# copy csproj and restore as distinct layers
-#COPY *.sln .
-#COPY Nure/*.csproj ./Nure/
-#RUN dotnet tool install nukeeper --global && dotnet restore
-
-# copy everything else and build app
-#COPY Nure/. ./Nure/
-#WORKDIR /app/Nure
-#RUN dotnet publish -c Release -o out
-
-
-#FROM mcr.microsoft.com/dotnet/core/aspnet:2.1 AS runtime
-#WORKDIR /app
-#ENV PATH="/root/.dotnet/tools:${PATH}"
-#COPY --from=build /root/.dotnet /root/.dotnet
-#COPY --from=build /app/Nure/out ./
-#ENTRYPOINT ["dotnet", "Nure.dll"]
