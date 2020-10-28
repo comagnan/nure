@@ -8,6 +8,7 @@ wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.
 dpkg -i packages-microsoft-prod.deb && \
 add-apt-repository universe && \
 apt-get update && \
-apt-get install -y apt-transport-https
+apt-get install -y apt-transport-https && \
+dotnet build /Nure/Nure.csproj
+ENV LD_LIBRARY_PATH=/Nure/bin/Debug/net5.0/runtimes/ubuntu.18.04-x64/native/
 ENTRYPOINT ["dotnet", "run", "--project", "/Nure", "--"]
-
