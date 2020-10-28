@@ -11,16 +11,16 @@ using Nure.Update;
 
 namespace Nure
 {
-    class Program
+    internal class Program
     {
-        private static readonly ILogger s_Logger = LogManager.GetCurrentClassLogger();
         private const string CONFIGURATION_FILE_NAME = "nure-config.json";
+        private static readonly ILogger s_Logger = LogManager.GetCurrentClassLogger();
 
-        static void Main(string[] p_Args)
+        private static void Main(string[] p_Args)
         {
             RuntimeParameters runtimeParameters = new RuntimeParameters();
 
-            var optionSet = new OptionSet {
+            OptionSet optionSet = new OptionSet {
                 { "d|directory-path=", "Absolute path to the repository to update.", value => runtimeParameters.DirectoryPath = value },
                 { "u|hosting-username=", "Username used with the hosting platform.", value => runtimeParameters.Username = value },
                 { "p|hosting-password=", "Password used with the hosting platform.", value => runtimeParameters.Password = value },
@@ -70,7 +70,7 @@ namespace Nure
                 return;
             }
 
-            var gitWrapper = new GitAgent(nureOptions.CommitMessage);
+            GitAgent gitWrapper = new GitAgent(nureOptions.CommitMessage);
             string remoteName = "origin";
             string branchName;
 
@@ -89,13 +89,12 @@ namespace Nure
                 return;
             }
 
-            NuKeeperWrapper nukeeper = new NuKeeperWrapper(nureOptions, p_RuntimeParameters.DirectoryPath);
-            nukeeper.Run();
+            NuGetWrapper nugetWrapper = new NuGetWrapper(nureOptions, p_RuntimeParameters.DirectoryPath);
+            nugetWrapper.Run();
             s_Logger.Info("Run Complete");
 
             gitWrapper.Stage();
-            //todo get them from the options file
-            Identity identity = new Identity("Jenkins", "SomeEmail@email.com");
+            Identity identity = new Identity(nureOptions.CommitUser, nureOptions.CommitEmail);
             Signature signature = new Signature(identity, DateTimeOffset.Now);
 
             try {
@@ -106,7 +105,7 @@ namespace Nure
                 return;
             }
 
-            var pullRequestWriterFactory = new PullRequestWriterFactory(nureOptions, p_RuntimeParameters.Username, p_RuntimeParameters.Password);
+            PullRequestWriterFactory pullRequestWriterFactory = new PullRequestWriterFactory(nureOptions, p_RuntimeParameters.Username, p_RuntimeParameters.Password);
             pullRequestWriterFactory.Create().WritePullRequest(branchName);
         }
     }

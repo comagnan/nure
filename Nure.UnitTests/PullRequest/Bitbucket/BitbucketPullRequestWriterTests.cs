@@ -18,22 +18,21 @@ namespace Nure.UnitTests.PullRequest.Bitbucket
         [Fact]
         public void ValidPullRequestIsSent()
         {
-            var bitbucketPullRequest = new BitbucketPullRequest();
-            var reviewers = GivenDefaultReviewers();
-            var nureOptions = GivenNureOptions();
+            BitbucketPullRequest bitbucketPullRequest = new BitbucketPullRequest();
+            List<BitbucketUser> reviewers = GivenDefaultReviewers();
+            NureOptions nureOptions = GivenNureOptions();
 
             m_ClientMock.Setup(client => client.GetCurrentUser()).Returns(new BitbucketUser());
             m_ClientMock.Setup(client => client.GetDefaultReviewers()).Returns(reviewers);
-            m_ClientMock.Setup(client => client.SendPullRequest(It.IsAny<BitbucketPullRequest>()))
-                .Callback<BitbucketPullRequest>(pr => bitbucketPullRequest = pr);
+            m_ClientMock.Setup(client => client.SendPullRequest(It.IsAny<BitbucketPullRequest>())).Callback<BitbucketPullRequest>(pr => bitbucketPullRequest = pr);
 
-            var pullRequestWriter = new BitbucketPullRequestWriter(nureOptions, m_ClientMock.Object);
+            BitbucketPullRequestWriter pullRequestWriter = new BitbucketPullRequestWriter(nureOptions, m_ClientMock.Object);
             pullRequestWriter.WritePullRequest(A_BRANCH_NAME);
 
             m_ClientMock.Verify(client => client.GetCurrentUser());
             m_ClientMock.Verify(client => client.GetDefaultReviewers());
             m_ClientMock.Verify(client => client.SendPullRequest(It.IsAny<BitbucketPullRequest>()));
-            
+
             Assert.Equal(nureOptions.PullRequestTitle, bitbucketPullRequest.Title);
             Assert.Equal(nureOptions.PullRequestDescription, bitbucketPullRequest.Description);
             Assert.Equal(A_BRANCH_NAME, bitbucketPullRequest.SourceBranch.Branch.Name);
@@ -44,37 +43,31 @@ namespace Nure.UnitTests.PullRequest.Bitbucket
         [Fact]
         public void CurrentUserIsFilteredFromDefaultReviewers()
         {
-            var bitbucketPullRequest = new BitbucketPullRequest();
+            BitbucketPullRequest bitbucketPullRequest = new BitbucketPullRequest();
 
-            m_ClientMock.Setup(client => client.GetCurrentUser()).Returns(new BitbucketUser { UserId = A_CURRENT_USER_ID});
+            m_ClientMock.Setup(client => client.GetCurrentUser()).Returns(new BitbucketUser { UserId = A_CURRENT_USER_ID });
             m_ClientMock.Setup(client => client.GetDefaultReviewers()).Returns(GivenDefaultReviewers);
-            m_ClientMock.Setup(client => client.SendPullRequest(It.IsAny<BitbucketPullRequest>()))
-                .Callback<BitbucketPullRequest>(pr => bitbucketPullRequest = pr);
-            
-            var pullRequestWriter = new BitbucketPullRequestWriter(GivenNureOptions(), m_ClientMock.Object);
+            m_ClientMock.Setup(client => client.SendPullRequest(It.IsAny<BitbucketPullRequest>())).Callback<BitbucketPullRequest>(pr => bitbucketPullRequest = pr);
+
+            BitbucketPullRequestWriter pullRequestWriter = new BitbucketPullRequestWriter(GivenNureOptions(), m_ClientMock.Object);
             pullRequestWriter.WritePullRequest(A_BRANCH_NAME);
 
-            Assert.All(bitbucketPullRequest.Reviewers,
-                reviewer => Assert.NotEqual(A_CURRENT_USER_ID, reviewer.UserId));
+            Assert.All(bitbucketPullRequest.Reviewers, reviewer => Assert.NotEqual(A_CURRENT_USER_ID, reviewer.UserId));
         }
 
-        private NureOptions GivenNureOptions()
-        {
-            return new NureOptions {
+        private NureOptions GivenNureOptions() =>
+            new NureOptions {
                 HostingService = "bitbucket",
                 HostingUrl = "https://perdu.com/project/repository",
                 DefaultBranch = "blue-ridge-mountains/shenandoah-river",
                 PullRequestTitle = "But before we get into the PR proper",
                 PullRequestDescription = "This content is brought to you by RAID - Shadow Legends"
             };
-        }
 
-        private List<BitbucketUser> GivenDefaultReviewers()
-        {
-            return new List<BitbucketUser> {
+        private List<BitbucketUser> GivenDefaultReviewers() =>
+            new List<BitbucketUser> {
                 new BitbucketUser { UserId = A_CURRENT_USER_ID },
                 new BitbucketUser { UserId = ANOTHER_USER_ID }
             };
-        }
     }
 }

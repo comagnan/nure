@@ -29,7 +29,7 @@ namespace Nure.UnitTests.PullRequest.Bitbucket
             string expectedEndpoint = "https://api.perdu.com/2.0/repositories/comagnan/nure/default-reviewers";
 
             try {
-                var bitbucketClient = new BitbucketClient(A_VALID_ADDRESS, A_USERNAME, A_PASSWORD, m_UrlClientMock.Object);
+                BitbucketClient bitbucketClient = new BitbucketClient(A_VALID_ADDRESS, A_USERNAME, A_PASSWORD, m_UrlClientMock.Object);
                 bitbucketClient.GetDefaultReviewers();
             } catch (AggregateException e) when (e.InnerException is FlurlHttpException httpException) {
                 string requestUri = httpException.Call.Request.RequestUri.ToString();

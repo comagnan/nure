@@ -17,7 +17,7 @@ namespace Nure.PullRequest.Bitbucket
         private readonly IBitbucketClient m_BitbucketClient;
 
         public BitbucketPullRequestWriter(NureOptions p_NureOptions,
-            IBitbucketClient p_BitbucketClient)
+                                          IBitbucketClient p_BitbucketClient)
         {
             m_NureOptions = p_NureOptions;
             m_BitbucketClient = p_BitbucketClient;
