@@ -9,8 +9,8 @@ namespace Nure.PullRequest.Bitbucket
 {
     public class BitbucketClient : IBitbucketClient
     {
-        private static readonly ILogger s_Logger = LogManager.GetCurrentClassLogger();
         private const string API_VERSION = "2.0";
+        private static readonly ILogger s_Logger = LogManager.GetCurrentClassLogger();
 
         private readonly string m_BaseUrl;
         private readonly string m_WorkspaceId;
@@ -21,9 +21,9 @@ namespace Nure.PullRequest.Bitbucket
         private readonly IFlurlClient m_FlurlClient;
 
         public BitbucketClient(string p_BitbucketAddress,
-            string p_Username,
-            string p_Password,
-            IFlurlClient p_FlurlClient)
+                               string p_Username,
+                               string p_Password,
+                               IFlurlClient p_FlurlClient)
         {
             m_Username = p_Username;
             m_Password = p_Password;
@@ -44,22 +44,13 @@ namespace Nure.PullRequest.Bitbucket
         {
             s_Logger.Info("Getting current user from Bitbucket.");
 
-            return new Url(m_BaseUrl).AppendPathSegments(API_VERSION, "user")
-                .WithBasicAuth(m_Username, m_Password)
-                .WithClient(m_FlurlClient)
-                .GetJsonAsync<BitbucketUser>()
-                .Result;
+            return new Url(m_BaseUrl).AppendPathSegments(API_VERSION, "user").WithBasicAuth(m_Username, m_Password).WithClient(m_FlurlClient).GetJsonAsync<BitbucketUser>().Result;
         }
 
         public List<BitbucketUser> GetDefaultReviewers()
         {
             s_Logger.Info($"Getting default reviewers of repository {m_RepositoryId} from Bitbucket.");
-            BitbucketPagedResult<BitbucketUser> reviewers = new Url(m_BaseUrl)
-                .AppendPathSegments(API_VERSION, "repositories", m_WorkspaceId, m_RepositoryId, "default-reviewers")
-                .WithBasicAuth(m_Username, m_Password)
-                .WithClient(m_FlurlClient)
-                .GetJsonAsync<BitbucketPagedResult<BitbucketUser>>()
-                .Result;
+            BitbucketPagedResult<BitbucketUser> reviewers = new Url(m_BaseUrl).AppendPathSegments(API_VERSION, "repositories", m_WorkspaceId, m_RepositoryId, "default-reviewers").WithBasicAuth(m_Username, m_Password).WithClient(m_FlurlClient).GetJsonAsync<BitbucketPagedResult<BitbucketUser>>().Result;
 
             return reviewers.Values;
         }
@@ -68,12 +59,7 @@ namespace Nure.PullRequest.Bitbucket
         {
             s_Logger.Info($"Sending pull request merging {p_BitbucketPullRequest.SourceBranch.Branch.Name} into {p_BitbucketPullRequest.DestinationBranch.Branch.Name}");
 
-            new Url(m_BaseUrl)
-                .AppendPathSegments(API_VERSION, "repositories", m_WorkspaceId, m_RepositoryId, "pullrequests")
-                .WithBasicAuth(m_Username, m_Password)
-                .WithClient(m_FlurlClient)
-                .PostJsonAsync(p_BitbucketPullRequest)
-                .Wait();
+            new Url(m_BaseUrl).AppendPathSegments(API_VERSION, "repositories", m_WorkspaceId, m_RepositoryId, "pullrequests").WithBasicAuth(m_Username, m_Password).WithClient(m_FlurlClient).PostJsonAsync(p_BitbucketPullRequest).Wait();
         }
     }
 }

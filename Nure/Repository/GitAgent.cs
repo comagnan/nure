@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using LibGit2Sharp;
@@ -11,10 +13,10 @@ namespace Nure.Repository
     public class GitAgent : IGitAgent
     {
         private static readonly ILogger s_Logger = LogManager.GetCurrentClassLogger();
+        private readonly string m_CommitMessagePrefix;
 
         private GitRepository m_Repository;
         private string m_BranchName;
-        private readonly string m_CommitMessagePrefix;
 
         public GitAgent(string p_CommitMessagePrefix)
         {
@@ -37,28 +39,29 @@ namespace Nure.Repository
         }
 
         public void Fetch(RuntimeParameters p_Parameters,
-            string p_RemoteName,
-            string p_HostingUrl)
+                          string p_RemoteName,
+                          string p_HostingUrl)
         {
             FetchOptions options = new FetchOptions {
                 CredentialsProvider = (url,
-                        usernameFromUrl,
-                        types) =>
-                    new UsernamePasswordCredentials { Username = p_Parameters.Username, Password = p_Parameters.Password }
+                                       usernameFromUrl,
+                                       types) => new UsernamePasswordCredentials {
+                    Username = p_Parameters.Username,
+                    Password = p_Parameters.Password
+                }
             };
 
-            var remote = m_Repository.Network.Remotes[p_RemoteName];
+            Remote remote = m_Repository.Network.Remotes[p_RemoteName];
             s_Logger.Debug($"Remote Url remote: {remote.Url}");
-            var refSpecs = remote.FetchRefSpecs.Select(x => x.Specification);
+            IEnumerable<string> refSpecs = remote.FetchRefSpecs.Select(x => x.Specification);
             Commands.Fetch(m_Repository, remote.Name, refSpecs, options, "Fetching the latest changes.");
         }
 
         public string SetupBranch(string p_BranchNamePrefix,
-            string p_RemoteName)
+                                  string p_RemoteName)
         {
-            //todo Create logic for branch name
-            string ticketName = "INNO-001";
-            string guid = "alpha1234";
+            string ticketName = "INNO-NURE";
+            string guid = DateTime.Now.ToString("yyyyMMdd_HHmmss");
             m_BranchName = $"{p_BranchNamePrefix}{ticketName}_{guid}";
             s_Logger.Info($"Branch: {m_BranchName}");
 
@@ -72,11 +75,9 @@ namespace Nure.Repository
             }
 
             Commands.Checkout(m_Repository, localBranch);
-            var remote = m_Repository.Network.Remotes[p_RemoteName];
+            Remote remote = m_Repository.Network.Remotes[p_RemoteName];
 
-            m_Repository.Branches.Update(localBranch,
-                b => b.Remote = remote.Name,
-                b => b.UpstreamBranch = localBranch.CanonicalName);
+            m_Repository.Branches.Update(localBranch, b => b.Remote = remote.Name, b => b.UpstreamBranch = localBranch.CanonicalName);
             return m_BranchName;
         }
 
@@ -92,7 +93,9 @@ namespace Nure.Repository
         public void Commit(Signature p_Signature)
         {
             RepositoryStatus status = m_Repository.RetrieveStatus();
-            if (!status.IsDirty) return;
+            if (!status.IsDirty) {
+                return;
+            }
 
             string commitMessage = $"{m_CommitMessagePrefix} - Dependency Update";
             s_Logger.Info($"Commit message. {commitMessage}");
@@ -106,9 +109,11 @@ namespace Nure.Repository
             s_Logger.Info($"Pushing {m_BranchName}.");
             PushOptions options = new PushOptions {
                 CredentialsProvider = (url,
-                        usernameFromUrl,
-                        types) =>
-                    new UsernamePasswordCredentials { Username = p_Parameters.Username, Password = p_Parameters.Password }
+                                       usernameFromUrl,
+                                       types) => new UsernamePasswordCredentials {
+                    Username = p_Parameters.Username,
+                    Password = p_Parameters.Password
+                }
             };
             m_Repository.Network.Push(m_Repository.Branches[m_BranchName], options);
             s_Logger.Info("Push Complete.");

@@ -1,3 +1,4 @@
+using System.IO;
 using Nure.Update;
 using Xunit;
 
@@ -14,23 +15,42 @@ namespace Nure.UnitTests.Update
         [Fact]
         public void MissingRuntimeParametersAreDetected()
         {
-            var missingPassword = new RuntimeParameters { DirectoryPath = "/bin/bash", Username = "user" };
-            var missingPath = new RuntimeParameters { Username = "user", Password = "password" };
-            var missingUser = new RuntimeParameters { DirectoryPath = "/bin/bash", Password = "password" };
+            RuntimeParameters missingPassword = new RuntimeParameters {
+                DirectoryPath = "/bin/bash",
+                Username = "user"
+            };
+            RuntimeParameters missingPath = new RuntimeParameters {
+                Username = "user",
+                Password = "password"
+            };
+            RuntimeParameters missingUser = new RuntimeParameters {
+                DirectoryPath = "/bin/bash",
+                Password = "password"
+            };
 
             Assert.False(missingPassword.Validate());
             Assert.False(missingPath.Validate());
             Assert.False(missingUser.Validate());
         }
 
-        private static RuntimeParameters GivenValidRuntimeParameters()
+        [Fact]
+        public void MaliciousRuntimeParametersAreDenied()
         {
-            return new RuntimeParameters {
-                DirectoryPath = "C:/System32",
+            RuntimeParameters maliciousConfig = new RuntimeParameters {
+                DirectoryPath = "rm -rf",
+                Username = "user",
+                Password = "password"
+            };
+
+            Assert.False(maliciousConfig.Validate());
+        }
+
+        private static RuntimeParameters GivenValidRuntimeParameters() =>
+            new RuntimeParameters {
+                DirectoryPath = Directory.GetCurrentDirectory(),
                 Help = false,
                 Username = "admin",
                 Password = "12345"
             };
-        }
     }
 }

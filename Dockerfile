@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/core/sdk:2.1 AS build
+FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 COPY *.sln .
 COPY Nure/ ./Nure/
 WORKDIR Nure/
@@ -8,7 +8,7 @@ RUN dotnet restore
 # copy csproj and restore as distinct layers
 #COPY *.sln .
 #COPY Nure/*.csproj ./Nure/
-#RUN dotnet tool install nukeeper --global && dotnet restore
+#RUN dotnet restore
 
 # copy everything else and build app
 #COPY Nure/. ./Nure/
