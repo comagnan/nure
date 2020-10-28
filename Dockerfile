@@ -1,24 +1,13 @@
-FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:5.0-focal AS build
 COPY *.sln .
 COPY Nure/ ./Nure/
-WORKDIR Nure/
 ENV PATH="/root/.dotnet/tools:${PATH}"
-RUN dotnet restore
+RUN apt-get update && \
+apt-get install -y software-properties-common && \
+wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb && \
+dpkg -i packages-microsoft-prod.deb && \
+add-apt-repository universe && \
+apt-get update && \
+apt-get install -y apt-transport-https
+ENTRYPOINT ["dotnet", "run", "--project", "/Nure", "--"]
 
-# copy csproj and restore as distinct layers
-#COPY *.sln .
-#COPY Nure/*.csproj ./Nure/
-#RUN dotnet restore
-
-# copy everything else and build app
-#COPY Nure/. ./Nure/
-#WORKDIR /app/Nure
-#RUN dotnet publish -c Release -o out
-
-
-#FROM mcr.microsoft.com/dotnet/core/aspnet:2.1 AS runtime
-#WORKDIR /app
-#ENV PATH="/root/.dotnet/tools:${PATH}"
-#COPY --from=build /root/.dotnet /root/.dotnet
-#COPY --from=build /app/Nure/out ./
-#ENTRYPOINT ["dotnet", "Nure.dll"]
