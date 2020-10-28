@@ -17,5 +17,5 @@ The configuration parameters are as follows:
 
 ## Setup NuRe as a developer ##
 ### Requirements ###
-* [.Net Core 2.1 SDK](https://www.microsoft.com/net/core#windowscmd)
+* [.Net 5.0 SDK](https://dotnet.microsoft.com/download/dotnet/5.0)
 * An IDE that supports this SDK (For example Visual Studio 2019 or JetBrains Rider 2019)
