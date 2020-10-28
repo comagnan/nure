@@ -16,26 +16,24 @@ namespace Nure.UnitTests.PullRequest
         [InlineData("bitbucket", typeof(BitbucketPullRequestWriter))]
         [InlineData("github", typeof(GitHubPullRequestWriter))]
         public void FactoryCreatesCorrectWriter(string p_HostingService,
-            Type p_WriterType)
+                                                Type p_WriterType)
         {
-            var pullRequestWriterFactory = new PullRequestWriterFactory(GivenNureOptions(p_HostingService), A_USERNAME, A_PASSWORD);
+            PullRequestWriterFactory pullRequestWriterFactory = new PullRequestWriterFactory(GivenNureOptions(p_HostingService), A_USERNAME, A_PASSWORD);
             Assert.Equal(p_WriterType, pullRequestWriterFactory.Create().GetType());
         }
 
         [Fact]
         public void FactoryThrowsWithInvalidHostingService()
         {
-            var pullRequestWriterFactory = new PullRequestWriterFactory(GivenNureOptions("perdu"), A_USERNAME, A_PASSWORD);
+            PullRequestWriterFactory pullRequestWriterFactory = new PullRequestWriterFactory(GivenNureOptions("perdu"), A_USERNAME, A_PASSWORD);
 
             Assert.Throws<NotImplementedException>(() => pullRequestWriterFactory.Create());
         }
 
-        private NureOptions GivenNureOptions(string p_HostingService)
-        {
-            return new NureOptions {
+        private NureOptions GivenNureOptions(string p_HostingService) =>
+            new NureOptions {
                 HostingService = p_HostingService,
                 HostingUrl = "https://perdu.com/project/repository"
             };
-        }
     }
 }

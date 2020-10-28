@@ -16,8 +16,8 @@ namespace Nure.PullRequest
         private readonly string m_HostingPassword;
 
         public PullRequestWriterFactory(NureOptions p_NureOptions,
-            string p_HostingUsername,
-            string p_HostingPassword)
+                                        string p_HostingUsername,
+                                        string p_HostingPassword)
         {
             m_NureOptions = p_NureOptions;
             m_HostingUsername = p_HostingUsername;
