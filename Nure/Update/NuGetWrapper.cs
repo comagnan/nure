@@ -19,7 +19,6 @@ namespace Nure.Update
 
         private readonly NureOptions m_NureOptions;
         private readonly string m_RepositoryDirectory;
-
         private readonly List<string> m_MonitoredProjects;
 
         public NuGetWrapper(NureOptions p_NureOptions,
@@ -27,7 +26,6 @@ namespace Nure.Update
         {
             m_NureOptions = p_NureOptions;
             m_RepositoryDirectory = p_RepositoryDirectory;
-
             m_MonitoredProjects = GetProjects();
         }
 
@@ -92,13 +90,7 @@ namespace Nure.Update
             }
 
             return new Process {
-                StartInfo = new ProcessStartInfo {
-                    FileName = "dotnet",
-                    Arguments = processArguments,
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                }
+                StartInfo = GetDotnetStartInfo(processArguments)
             };
         }
 
@@ -112,15 +104,7 @@ namespace Nure.Update
                     s_Logger.Info($"Updating {unmigratedPackages.Count} packages for project {projectPackages.Key}.");
                     foreach (NuGetPackage nuGetPackage in unmigratedPackages) {
                         try {
-                            Process process = new Process {
-                                StartInfo = new ProcessStartInfo {
-                                    FileName = "dotnet",
-                                    Arguments = $"add {Path.Combine(m_RepositoryDirectory, projectPackages.Key)} package {nuGetPackage.Name} --version {nuGetPackage.LatestVersion}",
-                                    RedirectStandardOutput = true,
-                                    UseShellExecute = false,
-                                    CreateNoWindow = true
-                                }
-                            };
+                            Process process = new Process { StartInfo = GetDotnetStartInfo($"add {Path.Combine(m_RepositoryDirectory, projectPackages.Key)} package {nuGetPackage.Name} --version {nuGetPackage.LatestVersion}") };
 
                             process.Start();
                             s_Logger.Info(process.StandardOutput.ReadToEnd);
@@ -139,15 +123,7 @@ namespace Nure.Update
 
         private List<string> GetProjects()
         {
-            Process process = new Process {
-                StartInfo = new ProcessStartInfo {
-                    FileName = "dotnet",
-                    Arguments = $"sln {m_RepositoryDirectory} list",
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                }
-            };
+            Process process = new Process { StartInfo = GetDotnetStartInfo($"sln {m_RepositoryDirectory} list") };
             process.Start();
             return GetProjectsFromStream(process.StandardOutput);
         }
@@ -168,5 +144,14 @@ namespace Nure.Update
 
             return projects;
         }
+
+        private ProcessStartInfo GetDotnetStartInfo(string p_Arguments) =>
+            new ProcessStartInfo {
+                FileName = "dotnet",
+                Arguments = p_Arguments,
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
     }
 }
