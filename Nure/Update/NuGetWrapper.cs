@@ -31,9 +31,14 @@ namespace Nure.Update
 
         public void Run()
         {
-            Process process = GetPackageListProcess();
-            process.Start();
-            Dictionary<string, List<NuGetPackage>> packages = GetUpdatesFromStream(process.StandardOutput);
+            Process restoreProcess = GetInitialRestoreProcess();
+            restoreProcess.Start();
+            restoreProcess.WaitForExit();
+
+            Process packageListProcess = GetPackageListProcess();
+            packageListProcess.Start();
+
+            Dictionary<string, List<NuGetPackage>> packages = GetUpdatesFromStream(packageListProcess.StandardOutput);
             s_Logger.Info($"Found {packages.Count} projects with packages to update.");
             UpdatePackages(packages);
             s_Logger.Info("Finished updating dependencies.");
@@ -81,6 +86,8 @@ namespace Nure.Update
             return packagesByProject;
         }
 
+        private Process GetInitialRestoreProcess() => new Process { StartInfo = GetDotnetStartInfo("restore {m_RepositoryDirectory}") };
+
         private Process GetPackageListProcess()
         {
             string processArguments = $"list {m_RepositoryDirectory} package --outdated";
@@ -89,9 +96,7 @@ namespace Nure.Update
                 processArguments += " --include-prerelease";
             }
 
-            return new Process {
-                StartInfo = GetDotnetStartInfo(processArguments)
-            };
+            return new Process { StartInfo = GetDotnetStartInfo(processArguments) };
         }
 
         private void UpdatePackages(Dictionary<string, List<NuGetPackage>> p_PackagesByProject)
