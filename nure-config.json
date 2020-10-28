@@ -4,6 +4,8 @@
   "DefaultBranch": "master",
   "NureBranchPrefix": "nure/",
   "CommitMessage": "[Version bump]",
+  "CommitUser": "Jenkins",
+  "CommitEmail": "email@email.com",
   "PullRequestDescription": null,
   "AllowPrereleaseDependencies": false,
   "CustomNugetSources": [],
