@@ -31,7 +31,7 @@ namespace Nure.Update
 
         public void Run()
         {
-            Process restoreProcess = GetInitialRestoreProcess();
+            Process restoreProcess = GetInitialRebuildProcess();
             restoreProcess.Start();
             restoreProcess.WaitForExit();
 
@@ -86,7 +86,7 @@ namespace Nure.Update
             return packagesByProject;
         }
 
-        private Process GetInitialRestoreProcess() => new Process { StartInfo = GetDotnetStartInfo("restore {m_RepositoryDirectory}") };
+        private Process GetInitialRebuildProcess() => new Process { StartInfo = GetDotnetStartInfo($"restore {m_RepositoryDirectory}") };
 
         private Process GetPackageListProcess()
         {
