@@ -16,6 +16,7 @@ The configuration parameters are as follows:
 - AllowPrereleaseDependencies: Whether to update dependencies to prerelease versions. (Default: false)
 
 Then, when launching NuRe, pass the following arguments: `-d "/Path/To/Repository/To/Update" -u "hostingServiceUsername" -p "hostingServicePassword"`.
+
 If you use the Docker image instead, share the repository with the container like so: `docker run -v /Path/To/Repository/To/Update:/Internal/Container/Path comagnan/nure:latest -d /Internal/Container/Path -u "hostingServiceUsername" -p "hostingServicePassword"`.
 
 ## Setup NuRe as a developer ##
