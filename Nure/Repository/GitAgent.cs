@@ -60,9 +60,8 @@ namespace Nure.Repository
         public string SetupBranch(string p_BranchNamePrefix,
                                   string p_RemoteName)
         {
-            string ticketName = "INNO-NURE";
             string guid = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-            m_BranchName = $"{p_BranchNamePrefix}{ticketName}_{guid}";
+            m_BranchName = $"{p_BranchNamePrefix}_{guid}";
             s_Logger.Info($"Branch: {m_BranchName}");
 
             Branch localBranch;
