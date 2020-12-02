@@ -13,6 +13,7 @@ namespace Nure.Update
     {
         private const string NUGET_PACKAGE_HEADER = "Top-level Package";
         private const string DOTNET_PROJECT_SEPARATOR = "----------";
+        private const string NOTHING_TO_UPDATE_MESSAGE = "has no updates given the current sources";
 
         private static readonly ILogger s_Logger = LogManager.GetCurrentClassLogger();
         private static readonly Regex s_ProjectNameRegex = new Regex("(?<=Project `)(.*?)(?=` has the following updates to its packages)", RegexOptions.Compiled);
@@ -78,7 +79,9 @@ namespace Nure.Update
                             packagesByProject[currentProject].Add(new NuGetPackage(packageName, packageComponents[2], packageComponents[3], packageComponents[4]));
                         }
                     } else {
-                        s_Logger.Warn($"Something went wrong with this package: {packageComponents}");
+                        if (!currentLine.Contains(NOTHING_TO_UPDATE_MESSAGE)) {
+                            s_Logger.Warn($"Something went wrong with this package: {currentLine}");
+                        }
                     }
                 }
             }

@@ -1,6 +1,6 @@
 using System;
-using GitHub;
 using Nure.Configuration;
+using Octokit;
 
 namespace Nure.PullRequest.GitHub
 {
@@ -18,8 +18,14 @@ namespace Nure.PullRequest.GitHub
 
         public void WritePullRequest(string p_BranchName)
         {
-            GitHubClient client = new GitHubClient(new OAuth2Token(m_AccessToken));
-            throw new NotImplementedException();
+            string[] githubUri = new Uri(m_NureOptions.HostingUrl).Segments;
+            GitHubClient client = new GitHubClient(new ProductHeaderValue("nure")) { Credentials = new Credentials(m_AccessToken) };
+            client.PullRequest.Create(githubUri[1].TrimEnd('/'), githubUri[2].TrimEnd('/'), CreatePullRequest(p_BranchName)).Wait();
+        }
+
+        private NewPullRequest CreatePullRequest(string p_BranchName)
+        {
+            return new NewPullRequest(m_NureOptions.PullRequestTitle, p_BranchName, m_NureOptions.DefaultBranch) { Body = m_NureOptions.PullRequestDescription };
         }
     }
 }

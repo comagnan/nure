@@ -12,7 +12,6 @@
 
     <ItemGroup>
         <PackageReference Include="Flurl.Http" Version="2.4.2" />
-        <PackageReference Include="GitHub" Version="1.21.0" />
         <PackageReference Include="NDesk.Options.Core" Version="1.2.5" />
         <PackageReference Include="NLog" Version="4.7.5" />
         <PackageReference Include="NuGet.CommandLine" Version="5.7.0">
@@ -21,6 +20,7 @@
         </PackageReference>
         <PackageReference Include="NuGet.Credentials" Version="5.7.0" />
         <PackageReference Include="NuGet.Protocol" Version="5.7.0" />
+        <PackageReference Include="Octokit" Version="0.48.0" />
     </ItemGroup>
 
     <ItemGroup>
