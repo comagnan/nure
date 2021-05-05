@@ -94,7 +94,7 @@ namespace Nure.Update
 
         private Process GetPackageListProcess()
         {
-            string processArguments = $"list {Path.Combine(m_RepositoryDirectory, m_NureOptions.PathToSolution, m_NureOptions.PathToSolution)} package --outdated";
+            string processArguments = $"list {Path.Combine(m_RepositoryDirectory, m_NureOptions.PathToSolution)} package --outdated";
 
             if (m_NureOptions.AllowPrereleaseDependencies) {
                 processArguments += " --include-prerelease";
@@ -113,7 +113,7 @@ namespace Nure.Update
                     s_Logger.Info($"Updating {unmigratedPackages.Count} packages for project {projectPackages.Key}.");
                     foreach (NuGetPackage nuGetPackage in unmigratedPackages) {
                         try {
-                            Process process = new Process { StartInfo = GetDotnetStartInfo($"add {Path.Combine(m_RepositoryDirectory, projectPackages.Key)} package {nuGetPackage.Name} --version {nuGetPackage.LatestVersion}") };
+                            Process process = new Process { StartInfo = GetDotnetStartInfo($"add {Path.Combine(m_RepositoryDirectory, m_NureOptions.PathToSolution, projectPackages.Key)} package {nuGetPackage.Name} --version {nuGetPackage.LatestVersion}") };
 
                             process.Start();
                             s_Logger.Info(process.StandardOutput.ReadToEnd);
