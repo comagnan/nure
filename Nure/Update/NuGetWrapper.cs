@@ -34,6 +34,7 @@ namespace Nure.Update
         {
             Process restoreProcess = GetInitialRebuildProcess();
             restoreProcess.Start();
+            s_Logger.Info(restoreProcess.StandardOutput.ReadToEnd);
             restoreProcess.WaitForExit();
 
             Process packageListProcess = GetPackageListProcess();
@@ -89,11 +90,11 @@ namespace Nure.Update
             return packagesByProject;
         }
 
-        private Process GetInitialRebuildProcess() => new Process { StartInfo = GetDotnetStartInfo($"restore {m_RepositoryDirectory}") };
+        private Process GetInitialRebuildProcess() => new Process { StartInfo = GetDotnetStartInfo($"restore {Path.Combine(m_RepositoryDirectory, m_NureOptions.PathToSolution)}") };
 
         private Process GetPackageListProcess()
         {
-            string processArguments = $"list {Path.Combine(m_RepositoryDirectory, m_NureOptions.PathToSolution ?? "")} package --outdated";
+            string processArguments = $"list {Path.Combine(m_RepositoryDirectory, m_NureOptions.PathToSolution)} package --outdated";
 
             if (m_NureOptions.AllowPrereleaseDependencies) {
                 processArguments += " --include-prerelease";
@@ -131,7 +132,7 @@ namespace Nure.Update
 
         private List<string> GetProjects()
         {
-            Process process = new Process { StartInfo = GetDotnetStartInfo($"sln {m_RepositoryDirectory} list") };
+            Process process = new Process { StartInfo = GetDotnetStartInfo($"sln {Path.Combine(m_RepositoryDirectory, m_NureOptions.PathToSolution)} list") };
             process.Start();
             return GetProjectsFromStream(process.StandardOutput);
         }
