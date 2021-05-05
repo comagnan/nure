@@ -12,6 +12,7 @@ namespace Nure.Configuration
 
         public string HostingService { get; set; }
         public string HostingUrl { get; set; }
+        public string PathToSolution { get; set; }
         public string DefaultBranch { get; set; }
         public string NureBranchPrefix { get; set; }
         public string CommitMessage { get; set; }
@@ -32,8 +33,9 @@ namespace Nure.Configuration
             CommitUser = DEFAULT_COMMIT_USER;
             CommitEmail = DEFAULT_COMMIT_EMAIL;
             PullRequestTitle = DEFAULT_PULL_REQUEST_TITLE;
+            PathToSolution = string.Empty;
         }
 
-        public override string ToString() => $"Hosting Service: {HostingService},\n" + $"Hosting Url: {HostingUrl},\n" + $"Default Branch: {DefaultBranch},\n" + $"NuRe Branch Prefix: {NureBranchPrefix},\n" + $"Commit Message: {CommitMessage},\n" + $"Pull Request Title: {PullRequestTitle},\n" + $"Pull Request Description: {PullRequestDescription ?? "null"},\n" + $"Custom NuGet Sources: [{string.Join(",", CustomNugetSources)}],\n" + $"Packages To Ignore: [{string.Join(",", PackagesToIgnore)}],\n" + $"Allow Prerelease Dependencies: {AllowPrereleaseDependencies}\n";
+        public override string ToString() => $"Hosting Service: {HostingService},\n" + $"Hosting Url: {HostingUrl},\n" + $"Default Branch: {DefaultBranch},\n" + $"Path to solution: {PathToSolution},\n" + $"NuRe Branch Prefix: {NureBranchPrefix},\n" + $"Commit Message: {CommitMessage},\n" + $"Pull Request Title: {PullRequestTitle},\n" + $"Pull Request Description: {PullRequestDescription ?? "null"},\n" + $"Custom NuGet Sources: [{string.Join(",", CustomNugetSources)}],\n" + $"Packages To Ignore: [{string.Join(",", PackagesToIgnore)}],\n" + $"Allow Prerelease Dependencies: {AllowPrereleaseDependencies}\n";
     }
 }

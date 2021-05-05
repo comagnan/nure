@@ -9,11 +9,13 @@ In the git repository you wish to update, create a file named `nure-config.json`
 
 The configuration parameters are as follows:
 - HostingService: Select `bitbucket` or `github` here. (Default: bitbucket)
+- PathToSolution: If the .net solution isn't at the root of the repository, specify its relative path here. (Default: "")
 - DefaultBranch: Branch to apply updates to. (Default: default)
 - NureBranchPrefix: Name to give to branches created by NuRe. (Default: nure/)
 - CommitMessage: Custom message to include with commits created by NuRe. (Default: [Version bump])
 - PullRequestDescription: Custom description to include with pull requests created by NuRE. (Default: none)
 - AllowPrereleaseDependencies: Whether to update dependencies to prerelease versions. (Default: false)
+- PackagesToIgnore: Select packages to ignore when looking for updates. (Default: []])
 
 Then, when launching NuRe, pass the following arguments: `-d "/Path/To/Repository/To/Update" -u "hostingServiceUsername" -p "hostingServicePassword"`.
 

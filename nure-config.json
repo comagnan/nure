@@ -1,6 +1,7 @@
 {
   "HostingService": "bitbucket",
   "HostingUrl": "https://bitbucket.org/project/repository/",
+  "PathToSolution": "sln",
   "DefaultBranch": "master",
   "NureBranchPrefix": "nure/",
   "CommitMessage": "[Version bump]",
@@ -9,5 +10,5 @@
   "PullRequestDescription": null,
   "AllowPrereleaseDependencies": false,
   "CustomNugetSources": [],
-  "PackagesToIgnore": ["evilparam"]
+  "PackagesToIgnore": ["evilPackage", "otherEvilPackage"]
 }

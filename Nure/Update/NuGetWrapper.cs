@@ -93,7 +93,7 @@ namespace Nure.Update
 
         private Process GetPackageListProcess()
         {
-            string processArguments = $"list {m_RepositoryDirectory} package --outdated";
+            string processArguments = $"list {Path.Combine(m_RepositoryDirectory, m_NureOptions.PathToSolution ?? "")} package --outdated";
 
             if (m_NureOptions.AllowPrereleaseDependencies) {
                 processArguments += " --include-prerelease";
