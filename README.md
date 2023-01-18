@@ -23,5 +23,5 @@ If you use the Docker image instead, share the repository with the container lik
 
 ## Setup NuRe as a developer ##
 ### Requirements ###
-* [.Net 6.0 SDK](https://dotnet.microsoft.com/download/dotnet/6.0)
-* An IDE that supports this SDK (For example Visual Studio 2019 or JetBrains Rider 2019)
+* [.Net 7.0 SDK](https://dotnet.microsoft.com/download/dotnet/7.0)
+* An IDE that supports this SDK (For example Visual Studio or JetBrains Rider)
