@@ -1,4 +1,7 @@
 # NuRe
+
+This repository is not maintained! Use the code within at your own risk.
+
 ## What is this repository for? ##
 
 This repository containers the code for NuRe, a dependency updater for .NET projects using NuGet. Its goal is to keep code bases secure by updating them more quickly and more efficiently.
